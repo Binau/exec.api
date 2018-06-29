@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": [
+      "node",
+      "mocha"
+    ],
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "noImplicitAny": false,
+    "outDir": "tmp"
+  },
+  "exclude": [
+    "dist",
+    "tmp",
+    "node_modules"
+  ]
+}

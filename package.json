@@ -1,0 +1,26 @@
+{
+  "name": "docker-rest",
+  "version": "0.0.1",
+  "author": "Binau",
+  "license": "SEE CC-BY-NC-SA-3.0-FR",
+  "devDependencies": {
+    "@types/mocha": "^5.2.1",
+    "@types/node": "^10.3.1",
+    "mocha": "^5.2.0",
+    "typescript": "^2.9.1",
+    "webpack": "^4.11.1",
+    "webpack-cli": "^3.0.2"
+  },
+  "scripts": {
+    "start": "npm run build.ts && node ./tmp/src/index",
+    "build.ts": "tsc",
+    "test.node": "npm run build.ts && mocha tmp/test/01*.js",
+    "test.koa": "npm run build.ts && mocha tmp/test/02*.js",
+    "test.http.typescript": "npm run build.ts && mocha tmp/test/03*.js"
+  },
+  "dependencies": {
+    "deep-equal": "^1.0.1",
+    "http-typescript": "^1.3.0",
+    "tar": "^4.4.4"
+  }
+}

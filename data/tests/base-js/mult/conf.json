@@ -1,0 +1,35 @@
+{
+  "imgName": "simple-js",
+  "files": [
+    {
+      "file": "index.js",
+      "copyTo": "src/index.js",
+      "tags": [
+        "#CODE1;"
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "param": {
+        "val1": 8,
+        "val2": 2
+      },
+      "result": 16
+    },
+    {
+      "param": {
+        "val1": 3,
+        "val2": 5
+      },
+      "result": 15
+    },
+    {
+      "param": {
+        "val1": 7,
+        "val2": 2
+      },
+      "result": 14
+    }
+  ]
+}
