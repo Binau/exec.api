@@ -4,7 +4,6 @@ import {ExecEngine, BuildParam, ExecLog} from "./exec.engine";
 import * as Fs from "fs";
 import {BufferUtils} from "../tool/buffer.utils";
 import * as deepEqual from 'deep-equal';
-import {EngineConf} from "../bean/conf/engine.conf";
 import {CoreEngine} from "./core.engine";
 
 class TestCode {
@@ -70,11 +69,11 @@ export class TestEngine {
             let filePath = `${confPath}/${f.file}`;
             let fileBuffer = BufferUtils.bufferOrStrToStr(await Fs.promises.readFile(filePath));
 
-            // Rmplacer les tags prévu
+            // Remplacer les tags prévu
             f.tags.forEach(t => {
-                let regExp = new RegExp(t);
+                let regExp = new RegExp(t.code);
                 // TODO LOG PARLANT SI LE TAG INEXISTANT ?
-                fileBuffer = fileBuffer.replace(regExp, codeByTag.get(t));
+                fileBuffer = fileBuffer.replace(regExp, codeByTag.get(t.code));
             });
 
             // Ajouter le fichier dans

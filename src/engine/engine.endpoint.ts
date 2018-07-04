@@ -3,7 +3,7 @@ import {ExecEngine} from "./exec.engine";
 import {TestEngine} from "./test.engine";
 import {FileUtils} from "../tool/file.utils";
 import {EngineConf} from "../bean/conf/engine.conf";
-import {DockerClient} from "../docker/docker.client";
+import {DockerClient} from "./docker/docker.client";
 
 
 export class EngineEndpoint {

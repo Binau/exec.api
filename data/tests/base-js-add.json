@@ -1,0 +1,40 @@
+{
+  "groupTitle": "Base du javascript",
+  "title": "Addition de 2 chiffres",
+  "imgName": "simple-js",
+  "files": [
+    {
+      "file": "index.js",
+      "copyTo": "src/index.js",
+      "tags": [
+        {
+          "code": "#CODE1;",
+          "templateFile": "template.js"
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "param": {
+        "val1": 8,
+        "val2": 2
+      },
+      "result": 10
+    },
+    {
+      "param": {
+        "val1": 3,
+        "val2": 5
+      },
+      "result": 8
+    },
+    {
+      "param": {
+        "val1": 7,
+        "val2": 2
+      },
+      "result": 9
+    }
+  ]
+}

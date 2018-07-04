@@ -1,4 +1,4 @@
-import {DockerClient} from "../docker/docker.client";
+import {DockerClient} from "./docker/docker.client";
 import {ImageBean} from "../bean/image.bean";
 import {CoreEngine, FileToInject} from "./core.engine";
 import {PromiseUtils} from "../tool/promise.utils";

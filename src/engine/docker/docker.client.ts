@@ -1,8 +1,8 @@
 import * as Fs from "fs";
 import * as Https from "https";
 import {Pack} from 'tar';
-import {StreamUtils} from "../tool/stream.utils";
-import {BufferUtils} from "../tool/buffer.utils";
+import {StreamUtils} from "../../tool/stream.utils";
+import {BufferUtils} from "../../tool/buffer.utils";
 
 export class DockerClient {
 

@@ -3,6 +3,8 @@ import {TestEngine, TestInfo} from "./engine/test.engine";
 import {EngineEndpoint} from "./engine/engine.endpoint";
 import {CoreEngine} from "./engine/core.engine";
 import {ExecEngine} from "./engine/exec.engine";
+import {HttpServer} from "http-typescript";
+import {TestHttp} from "./http/test.http";
 
 class Main {
 
@@ -17,11 +19,19 @@ class Main {
         //await this.testOk();
         //await this.testCustom();
         //await this.testError();
-        await this.testInfinite();
+        //await this.testInfinite();
 
         // Mult
         //await this.testMult();
         //await this.testMultX();
+
+        let server = new HttpServer();
+        server
+            .debug()
+            .loadHttp(new TestHttp(), '/rest');
+        server.listen(3333)
+
+
     }
 
     public async testExec() {

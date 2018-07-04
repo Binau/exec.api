@@ -1,4 +1,4 @@
-import {DockerClient} from "../docker/docker.client";
+import {DockerClient} from "./docker/docker.client";
 import {EngineConf} from "../bean/conf/engine.conf";
 import {ImageBean} from "../bean/image.bean";
 import {FileUtils} from "../tool/file.utils";
