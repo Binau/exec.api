@@ -1,10 +1,10 @@
 import {Pack} from 'tar';
 import {TestEngine, TestInfo} from "./engine/test.engine";
-import {EngineEndpoint} from "./engine/engine.endpoint";
 import {CoreEngine} from "./engine/core.engine";
 import {ExecEngine} from "./engine/exec.engine";
 import {HttpServer} from "http-typescript";
 import {TestHttp} from "./http/test.http";
+import {TestWs} from "./http/test.ws";
 
 class Main {
 
@@ -28,7 +28,8 @@ class Main {
         let server = new HttpServer();
         server
             .debug()
-            .loadHttp(new TestHttp(), '/rest');
+            .loadHttp(new TestHttp(), '/rest')
+            .loadWs(TestWs, '/ws/runTest');
         server.listen(3333)
 
 
@@ -232,7 +233,7 @@ class Main {
 
         if (!!testExec.log) {
 
-            if(testExec.log.message.endsWith('\n')) testExec.log.message = testExec.log.message.substr(0,testExec.log.message.length-1);
+            if (testExec.log.message.endsWith('\n')) testExec.log.message = testExec.log.message.substr(0, testExec.log.message.length - 1);
 
             console.log(`[${testExec.idTest}][${testExec.log.isInfo ? "INFO" : "ERROR"}] ${testExec.log.message}`);
 
