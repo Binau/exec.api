@@ -1,0 +1,6 @@
+
+# IDEs and editors
+/.idea
+
+# dependencies
+/node_modules
