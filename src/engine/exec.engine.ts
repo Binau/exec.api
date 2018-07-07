@@ -2,6 +2,7 @@ import {DockerClient} from "./docker/docker.client";
 import {ImageBean} from "../bean/image.bean";
 import {CoreEngine, FileToInject} from "./core.engine";
 import {PromiseUtils} from "../tool/promise.utils";
+import {ExecLog} from "../bean/export/export.bean";
 
 
 export class BuildParam {
@@ -16,13 +17,6 @@ export class ExecRequest {
     in?: any;
     timeout?: number;
     logCallBack?: (log: ExecLog) => void
-}
-
-export class ExecLog {
-    isInfo?: true;
-    isError?: true;
-
-    message?: string;
 }
 
 

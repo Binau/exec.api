@@ -1,10 +1,11 @@
 import {Pack} from 'tar';
-import {TestEngine, TestInfo} from "./engine/test.engine";
+import {TestEngine} from "./engine/test.engine";
 import {CoreEngine} from "./engine/core.engine";
 import {ExecEngine} from "./engine/exec.engine";
 import {HttpServer} from "http-typescript";
 import {TestHttp} from "./http/test.http";
 import {TestWs} from "./http/test.ws";
+import {TestInfo} from "./bean/export/export.bean";
 
 class Main {
 
@@ -90,7 +91,7 @@ class Main {
 
     public async testMultX() {
         let coreEngine = await CoreEngine.loadEngine('data/docker/conf.json');
-        let testEngine = new TestEngine(coreEngine);
+        let testEngine = new TestEngine(coreEngine.debug());
 
         let codeToTest = 'function plop(val1, val2) { ' +
             '   return 12; ' +

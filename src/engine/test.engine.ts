@@ -1,40 +1,11 @@
 import {TestConf} from "../bean/conf/test.conf";
 import {FileUtils} from "../tool/file.utils";
-import {ExecEngine, BuildParam, ExecLog} from "./exec.engine";
+import {ExecEngine, BuildParam} from "./exec.engine";
 import * as Fs from "fs";
 import {BufferUtils} from "../tool/buffer.utils";
 import * as deepEqual from 'deep-equal';
 import {CoreEngine} from "./core.engine";
-
-class TestCode {
-    tag: string;
-    code: string;
-}
-
-class TestParam {
-    // Id du tests
-    id: string;
-    // Codes à injecter
-    codes: TestCode[];
-}
-
-export class TestInfo {
-    idTest: number;
-
-    result?: TestResult;
-    log?: ExecLog;
-
-}
-
-export class TestResult {
-    in: any;
-    expectedOut: any;
-    out?: any;
-    randomTest: boolean;
-
-    success: boolean;
-}
-
+import {TestInfo, TestParam, TestResult} from "../bean/export/export.bean";
 
 export class TestEngine {
 
@@ -50,8 +21,12 @@ export class TestEngine {
         // FIXME param.id doit faire partie des valeurs possible, tester pour eviter l'injection de chemins
 
         let confPath = `${this.coreEngine.engineConf.dockerTestsRoot}/${param.id}`;
-        let confFile = `${confPath}/conf.json`;
+        let confFile = `${this.coreEngine.engineConf.dockerTestsRoot}/${param.id}.json`;
+
+        console.log(`Chargement du test ${confFile}`, param);
+
         let confTest = await FileUtils.loadConf<TestConf>(confFile);
+
 
         let buildParam: BuildParam = {
             idImage: confTest.imgName,
@@ -134,7 +109,7 @@ export class TestEngine {
                     result: testResult
                 });
 
-            if(stopTests) return;
+            if (stopTests) return;
             idTest++;
         }
 
