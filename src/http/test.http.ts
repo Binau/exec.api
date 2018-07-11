@@ -2,7 +2,7 @@ import {GET, HttpContext} from "http-typescript";
 import * as Fs from "fs";
 import {FileUtils} from "../tool/file.utils";
 import {TestConf} from "../bean/conf/test.conf";
-import {TestInfos} from "../bean/export/export.bean";
+import {TestInfos} from "../bean/api.bean";
 
 
 export class TestHttp {
@@ -52,17 +52,17 @@ export class TestHttp {
             groupTitle: conf.groupTitle,
             title: conf.title,
             descriptif : conf.descriptif,
-            tags: [],
+            codes: [],
             tests: []
         };
 
         if (!full) return testInfos;
 
         for (let f of conf.files) {
-            for (let t of f.tags) {
-                testInfos.tags.push({
+            for (let t of f.codes) {
+                testInfos.codes.push({
                     title: t.title,
-                    code: t.code,
+                    tag: t.tag,
                     template: await FileUtils.loadFile(`${this.rootTestsDir}/${testInfos.id}/${t.templateFile}`)
                 });
             }

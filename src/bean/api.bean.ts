@@ -1,3 +1,9 @@
+export class Code {
+    title: string;
+    tag: string;
+    template: string;
+}
+
 export class TestInfos {
 
     // Infos generale
@@ -7,11 +13,7 @@ export class TestInfos {
     public descriptif: string;
 
     //
-    public tags: {
-        title: string,
-        code: string,
-        template: string
-    }[];
+    public codes: Code[];
 
 
     public tests: {

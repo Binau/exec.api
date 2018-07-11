@@ -1,8 +1,11 @@
-import {DockerClient} from "./docker/docker.client";
+import {DockerClient} from "./docker.client";
 import {EngineConf} from "../bean/conf/engine.conf";
 import {ImageBean} from "../bean/image.bean";
 import {FileUtils} from "../tool/file.utils";
 import {ImageConf} from "../bean/conf/image.conf";
+import * as Fs from "fs";
+import {Pack} from 'tar';
+import {StreamUtils} from "../tool/stream.utils";
 
 
 export class FileToInject {
@@ -30,6 +33,9 @@ export class CoreEngine {
             .activeSsl('key.pem', 'cert.pem', 'ca.pem', engineConf.sslRoot);
     }
 
+    /*
+    ********************** LOAD
+     */
 
     public static async loadEngine(confPath: string): Promise<CoreEngine> {
         let engineConf = await FileUtils.loadConf<EngineConf>(confPath);
@@ -57,21 +63,49 @@ export class CoreEngine {
         }
     }
 
-    public async buildImg(img: ImageBean): Promise<void> {
-        let imgDir = `${this.engineConf.dockerImgsRoot}/${img.name}/image`;
-        return await this.dockerClient.buildFromDir(img.fullName, imgDir);
+    /*
+    ************************ IMAGES
+     */
+
+    public async buildFromTar(imgName: string, tarPath: string): Promise<void> {
+        return this.dockerClient.build(imgName, Fs.readFileSync(tarPath));
     }
+
+    public async buildFromDir(img: ImageBean): Promise<void> {
+
+        let imgDir = `${this.engineConf.dockerImgsRoot}/${img.name}/image`;
+
+        let pack = new Pack({cwd: imgDir});
+
+        let filesPromise: string[] = await Fs.promises.readdir(imgDir);
+
+        filesPromise.forEach((f) => {
+            pack.write(f);
+        });
+        pack.end();
+
+        let val = await StreamUtils.readToString(pack);
+
+        // build de l'image
+        return this.dockerClient.build(img.fullName, val);
+    }
+
+
 
     public async getOrBuildImg(idImage: string): Promise<ImageBean> {
 
         let imgBean: ImageBean = await this.loadImgConf(idImage);
-        let image = await this.dockerClient.getImage(imgBean.fullName);
-        if (!image.Id) {
-            await this.buildImg(imgBean);
+        let imageId : string = await this.dockerClient.getImage(imgBean.fullName);
+        if (!imageId) {
+            await this.buildFromDir(imgBean);
         }
         return imgBean;
 
     }
+
+    /*
+    ***************************** CONTAINERS
+     */
 
     public async startContainer(imgBean: ImageBean): Promise<string> {
         let idContainer = await this.dockerClient.createContainers(imgBean.fullName);
@@ -80,13 +114,28 @@ export class CoreEngine {
     }
 
 
-    /* UTILISATION DE SCRIPTS SPECIFIQUES */
-
+    /**
+     * Creer une execution permettant d'ecrire un fichier dans le container docker
+     * @param {string} idContainer
+     * @param {FileToInject} file
+     * @returns {Promise<void>}
+     */
     public async writeFile(idContainer: string, file: FileToInject): Promise<void> {
         let idExec = await this.dockerClient.createExec(
             idContainer,
             ['./writeFile.sh', file.code, file.filePath]);
         await this.dockerClient.startExec(idExec);
+    }
+    /**
+     * Creer une execution permettant d'ecrire des fichier dans le container docker
+     * @param {string} idContainer
+     * @param {FileToInject} file
+     * @returns {Promise<void>}
+     */
+    public async writeFiles(idContainer: string, files: FileToInject[]): Promise<void> {
+        for (let file of files) {
+            this.writeFile(idContainer, file);
+        }
     }
 
 }

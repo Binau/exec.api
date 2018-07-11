@@ -1,7 +1,7 @@
 import {HttpContext, WsServer} from "http-typescript";
-import {TestEngine} from "../engine/test.engine";
-import {CoreEngine} from "../engine/core.engine";
-import {TestInfo, TestParam} from "../bean/export/export.bean";
+import {TestInfo, TestParam} from "../bean/api.bean";
+import {CoreEngine} from "../docker-engine/core.engine";
+import {TestEngine} from "../docker-engine/test.engine";
 
 export class TestWs extends WsServer {
     public debug: boolean = true;

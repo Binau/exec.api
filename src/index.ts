@@ -1,11 +1,11 @@
 import {Pack} from 'tar';
-import {TestEngine} from "./engine/test.engine";
-import {CoreEngine} from "./engine/core.engine";
-import {ExecEngine} from "./engine/exec.engine";
 import {HttpServer} from "http-typescript";
 import {TestHttp} from "./http/test.http";
 import {TestWs} from "./http/test.ws";
-import {TestInfo} from "./bean/export/export.bean";
+import {TestInfo} from "./bean/api.bean";
+import {CoreEngine} from "./docker-engine/core.engine";
+import {TestEngine} from "./docker-engine/test.engine";
+import {ExecEngine} from "./docker-engine/exec.engine";
 
 class Main {
 

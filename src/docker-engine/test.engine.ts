@@ -5,7 +5,7 @@ import * as Fs from "fs";
 import {BufferUtils} from "../tool/buffer.utils";
 import * as deepEqual from 'deep-equal';
 import {CoreEngine} from "./core.engine";
-import {TestInfo, TestParam, TestResult} from "../bean/export/export.bean";
+import {TestInfo, TestParam, TestResult} from "../bean/api.bean";
 
 export class TestEngine {
 
@@ -45,10 +45,10 @@ export class TestEngine {
             let fileBuffer = BufferUtils.bufferOrStrToStr(await Fs.promises.readFile(filePath));
 
             // Remplacer les tags prévu
-            f.tags.forEach(t => {
-                let regExp = new RegExp(t.code);
+            f.codes.forEach(t => {
+                let regExp = new RegExp(t.tag);
                 // TODO LOG PARLANT SI LE TAG INEXISTANT ?
-                fileBuffer = fileBuffer.replace(regExp, codeByTag.get(t.code));
+                fileBuffer = fileBuffer.replace(regExp, codeByTag.get(t.tag));
             });
 
             // Ajouter le fichier dans
@@ -77,7 +77,7 @@ export class TestEngine {
 
             // Injection des tests
             await execEngine.run({
-                in: t.param,
+                params: t.param,
                 logCallBack: l => {
 
                     if (l.isError && l.message === 'Timeout') {

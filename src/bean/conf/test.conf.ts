@@ -6,9 +6,9 @@ export class TestConf {
     public files: {
         file: string,
         copyTo: string,
-        tags: {
+        codes: {
             title : string,
-            code: string,
+            tag: string,
             templateFile: string
         }[]
     }[];
