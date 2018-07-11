@@ -1,0 +1,14 @@
+{
+    "nom": "les bases de Javascript",
+    "dateCreation":"10/10/2010",
+    "dateMaj":"11/11/2011",
+    "version":"1.0",
+    "auteurs":["JROC","BINAU"],
+    "id":"base-js-1",
+    "motsClefs":["javascript","js"],
+    "partie1":"contenu de ma partie 1",
+    "exercice1":"contenu de mon exercice 1",
+    "partie2":"contenu de ma partie 1",
+    "exercice2":"contenu de mon exercice 1",
+    "exerciceValidation":"contenu de mon exercice de validation"
+}

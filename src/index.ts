@@ -6,6 +6,7 @@ import {HttpServer} from "http-typescript";
 import {TestHttp} from "./http/test.http";
 import {TestWs} from "./http/test.ws";
 import {TestInfo} from "./bean/export/export.bean";
+import { FormationHttp } from './http/formation.http';
 
 class Main {
 
@@ -31,7 +32,12 @@ class Main {
             .debug()
             .loadHttp(new TestHttp(), '/rest')
             .loadWs(TestWs, '/ws/runTest');
-        server.listen(3333)
+        server.listen(8033);
+
+        server
+            .debug()
+            .loadHttp(new FormationHttp(), '/api');
+        server.listen(8066);
 
 
     }
