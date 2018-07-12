@@ -1,8 +1,8 @@
-import {DockerClient} from "./docker.client";
-import {ImageBean} from "../bean/image.bean";
-import {CoreEngine, FileToInject} from "./core.engine";
-import {PromiseUtils} from "../tool/promise.utils";
-import {ExecLog} from "../bean/api.bean";
+import {DockerClient} from './docker.client';
+import {ImageBean} from '../bean/image.bean';
+import {CoreEngine, FileToInject} from './core.engine';
+import {PromiseUtils} from '../tool/promise.utils';
+import {ExecLog} from '../bean/api.bean';
 
 
 export class BuildParam {
@@ -26,9 +26,7 @@ export class ExecEngine {
     private dockerClient: DockerClient;
     private _debug = false;
 
-    private constructor(
-        private coreEngine: CoreEngine
-    ) {
+    private constructor(private coreEngine: CoreEngine) {
         this.dockerClient = this.coreEngine.dockerClient
     }
 

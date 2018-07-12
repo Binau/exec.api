@@ -12,8 +12,8 @@ export class TestWs extends WsServer {
         if (this.running) return;
         this.running = true;
 
-        let coreEngine = await CoreEngine.loadEngine('data/docker/conf.json');
-        let testEngine = new TestEngine(coreEngine);
+        let coreEngine = await CoreEngine.loadEngine('data/docker/conf-portable.json');
+        let testEngine = new TestEngine(coreEngine.debug());
 
         console.log('params : ', data);
 
