@@ -2,7 +2,7 @@ import {Pack} from 'tar';
 import {HttpServer} from "http-typescript";
 import {TestHttp} from "./http/test.http";
 import {TestWs} from "./http/test.ws";
-import {TestInfo} from "./bean/api.bean";
+import {TestInfo} from './bean/api.bean';
 import { FormationHttp } from './http/formation.http';
 
 import {CoreEngine} from "./docker-engine/core.engine";
