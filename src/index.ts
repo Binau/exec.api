@@ -3,6 +3,8 @@ import {HttpServer} from "http-typescript";
 import {TestHttp} from "./http/test.http";
 import {TestWs} from "./http/test.ws";
 import {TestInfo} from "./bean/api.bean";
+import { FormationHttp } from './http/formation.http';
+
 import {CoreEngine} from "./docker-engine/core.engine";
 import {TestEngine} from "./docker-engine/test.engine";
 import {ExecEngine} from "./docker-engine/exec.engine";
@@ -29,10 +31,10 @@ class Main {
         let server = new HttpServer();
         server
             .debug()
-            .loadHttp(new TestHttp(), '/rest')
+            .loadHttp(new TestHttp(), '/rest')      
+            .loadHttp(new FormationHttp(), '/api');
             .loadWs(TestWs, '/ws/runTest');
-        server.listen(3333)
-
+        server.listen(3333);
 
     }
 
