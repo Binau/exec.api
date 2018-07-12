@@ -14,5 +14,9 @@ export class StreamUtils {
         });
     }
 
+    public static async readToObj<T>(stream: Readable): Promise<T> {
+        return StreamUtils.readToString(stream).then(v=>JSON.parse(v));
+    }
+
 
 }

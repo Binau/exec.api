@@ -1,8 +1,8 @@
-import {DockerClient} from "./docker/docker.client";
+import {DockerClient} from "./docker.client";
 import {ImageBean} from "../bean/image.bean";
 import {CoreEngine, FileToInject} from "./core.engine";
 import {PromiseUtils} from "../tool/promise.utils";
-import {ExecLog} from "../bean/export/export.bean";
+import {ExecLog} from "../bean/api.bean";
 
 
 export class BuildParam {
@@ -14,7 +14,7 @@ export class BuildParam {
 }
 
 export class ExecRequest {
-    in?: any;
+    params?: any;
     timeout?: number;
     logCallBack?: (log: ExecLog) => void
 }
@@ -24,13 +24,13 @@ export class ExecEngine {
 
     private idContainer: string;
     private dockerClient: DockerClient;
+    private _debug = false;
 
     private constructor(
         private coreEngine: CoreEngine
     ) {
         this.dockerClient = this.coreEngine.dockerClient
     }
-
 
     public static async create(coreEngine: CoreEngine, param: BuildParam): Promise<ExecEngine> {
         let execEngine = new ExecEngine(coreEngine);
@@ -39,6 +39,11 @@ export class ExecEngine {
     }
 
 
+    /**
+     * Creer et démarre un container et inject les fichiers fournis
+     * @param {BuildParam} param
+     * @returns {Promise<void>}
+     */
     private async build(param: BuildParam) {
 
         // Recuperation/ creation de l'image
@@ -48,9 +53,11 @@ export class ExecEngine {
         this.idContainer = await this.coreEngine.startContainer(imgBean);
 
         // Ecriture de chacun des fichiers
-        for (let file of param.files) {
-            this.coreEngine.writeFile(this.idContainer, file);
-        }
+        this.coreEngine.writeFiles(this.idContainer, param.files);
+    }
+
+    public debug() {
+        this._debug = true;
     }
 
     public async run(req?: ExecRequest): Promise<void> {
@@ -59,28 +66,30 @@ export class ExecEngine {
         req = req || {};
         req.timeout = req.timeout || 5000; // 5s par defaut
 
-        let idExec = await this.dockerClient.createExec(this.idContainer, ['./run.sh', JSON.stringify(req.in)]);
+        // Lancement de l'execution
+        let idExec = await this.dockerClient.createExec(this.idContainer, ['./run.sh', JSON.stringify(req.params)]);
 
         try {
-            await PromiseUtils.timeout(this.dockerClient.startExec(idExec, (l) => {
+            await PromiseUtils.timeout(
+                this.dockerClient.startExec(
+                    idExec,
+                    (l) => {
+                        if (!l || l === '\n') return;
+                        try {
+                            let testResp: ExecLog = JSON.parse(l);
 
-                if (!l || l === '\n') return;
+                            let isLog = (testResp.isError || testResp.isInfo);
+                            if (isLog) req.logCallBack(testResp);
 
-                try {
-                    let testResp: ExecLog = JSON.parse(l);
+                        } catch (e) {
+                            // La reponse n'est pas en JSON, c'est une erreur
+                            req.logCallBack && req.logCallBack({
+                                isError: true,
+                                message: l
+                            });
+                        }
 
-                    let isLog = (testResp.isError || testResp.isInfo);
-                    if (isLog) req.logCallBack(testResp);
-
-                } catch (e) {
-                    // La reponse n'est pas en JSON, c'est une erreur
-                    req.logCallBack && req.logCallBack({
-                        isError: true,
-                        message: l
-                    });
-                }
-
-            }), req.timeout);
+                    }), req.timeout);
         } catch (e) {
             if (e == PromiseUtils.TIMEOUT) {
                 this.stop();
@@ -89,6 +98,7 @@ export class ExecEngine {
                     message: 'Timeout'
                 });
             }
+            else throw e;
         }
 
     }
@@ -96,8 +106,8 @@ export class ExecEngine {
     public async stop(): Promise<void> {
 
         // Stop + suppression après timeout
-        await this.dockerClient.stopContainer(this.idContainer);
-        await this.dockerClient.deleteContainer(this.idContainer);
+        //await this.dockerClient.stopContainer(this.idContainer);
+        //await this.dockerClient.deleteContainer(this.idContainer);
 
         return;
     }

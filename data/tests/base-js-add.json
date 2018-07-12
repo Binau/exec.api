@@ -7,10 +7,10 @@
     {
       "file": "index.js",
       "copyTo": "src/index.js",
-      "tags": [
+      "codes": [
         {
           "title": "index.js",
-          "code": "#CODE1;",
+          "tag": "#CODE1;",
           "templateFile": "template.js"
         }
       ]

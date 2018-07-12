@@ -1,12 +1,13 @@
 import {Pack} from 'tar';
-import {TestEngine} from "./engine/test.engine";
-import {CoreEngine} from "./engine/core.engine";
-import {ExecEngine} from "./engine/exec.engine";
 import {HttpServer} from "http-typescript";
 import {TestHttp} from "./http/test.http";
 import {TestWs} from "./http/test.ws";
-import {TestInfo} from "./bean/export/export.bean";
+import {TestInfo} from "./bean/api.bean";
 import { FormationHttp } from './http/formation.http';
+
+import {CoreEngine} from "./docker-engine/core.engine";
+import {TestEngine} from "./docker-engine/test.engine";
+import {ExecEngine} from "./docker-engine/exec.engine";
 
 class Main {
 
@@ -30,15 +31,10 @@ class Main {
         let server = new HttpServer();
         server
             .debug()
-            .loadHttp(new TestHttp(), '/rest')
-            .loadWs(TestWs, '/ws/runTest');
-        server.listen(8033);
-
-        server
-            .debug()
+            .loadHttp(new TestHttp(), '/rest')      
             .loadHttp(new FormationHttp(), '/api');
-        server.listen(8066);
-
+            .loadWs(TestWs, '/ws/runTest');
+        server.listen(3333);
 
     }
 
