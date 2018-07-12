@@ -32,9 +32,9 @@ class Main {
         server
             .debug()
             .loadHttp(new TestHttp(), '/rest')      
-            .loadHttp(new FormationHttp(), '/api');
+            .loadHttp(new FormationHttp(), '/rest')
             .loadWs(TestWs, '/ws/runTest');
-        server.listen(3333);
+        server.listen(8333);
 
     }
 
