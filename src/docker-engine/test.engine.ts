@@ -5,7 +5,7 @@ import * as Fs from "fs";
 import {BufferUtils} from "../tool/buffer.utils";
 import * as deepEqual from 'deep-equal';
 import {CoreEngine} from "./core.engine";
-import {TestInfo, TestParam, TestResult} from "../bean/api.bean";
+import {TestInfo, TestParam, TestResult} from "../bean/api/test.ws.api";
 
 export class TestEngine {
 

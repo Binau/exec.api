@@ -2,7 +2,7 @@ import {GET, HttpContext} from "http-typescript";
 import * as Fs from "fs";
 import {FileUtils} from "../tool/file.utils";
 import {TestConf} from "../bean/conf/test.conf";
-import {TestInfos} from "../bean/api.bean";
+import {TestInfos} from "../bean/api/test.http.api";
 
 
 export class TestHttp {

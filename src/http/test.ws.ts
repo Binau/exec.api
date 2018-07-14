@@ -1,5 +1,5 @@
 import {HttpContext, WsServer} from 'http-typescript';
-import {TestInfo, TestParam} from '../bean/api.bean';
+import {TestInfo, TestParam} from '../bean/api/test.ws.api';
 import {CoreEngine} from '../docker-engine/core.engine';
 import {TestEngine} from '../docker-engine/test.engine';
 

@@ -2,7 +2,7 @@ import {DockerClient} from './docker.client';
 import {ImageBean} from '../bean/image.bean';
 import {CoreEngine, FileToInject} from './core.engine';
 import {PromiseUtils} from '../tool/promise.utils';
-import {ExecLog} from '../bean/api.bean';
+import {ExecLog} from '../bean/api/test.ws.api';
 
 
 export class BuildParam {
