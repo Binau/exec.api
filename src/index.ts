@@ -9,7 +9,6 @@ import { UtilisateurHttp } from './http/utilisateur.http';
 import {CoreEngine} from "./docker-engine/core.engine";
 import {TestEngine} from "./docker-engine/test.engine";
 import {ExecEngine} from "./docker-engine/exec.engine";
-const mongoose = require('mongoose');
 
 
 class Main {
@@ -31,12 +30,6 @@ class Main {
         //await this.testMult();
         //await this.testMultX();
 
-        mongoose.connect('mongodb://test:test123@ds245661.mlab.com:45661/exec', { useNewUrlParser: true }, (err) => {
-            if(!err){
-                console.log('connected to mongo')
-            }
-        })
-        
         let server = new HttpServer();
         server
             .debug()
@@ -44,7 +37,7 @@ class Main {
             .loadHttp(new FormationHttp(), '/rest')
             .loadHttp(new UtilisateurHttp(), '/rest')
             .loadWs(TestWs, '/ws/runTest');
-        server.listen(8333);
+        server.listen(8334);
 
     }
 

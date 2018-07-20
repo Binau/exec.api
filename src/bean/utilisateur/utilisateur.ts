@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import * as mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -7,4 +7,11 @@ let utilisateurSchema = new Schema({
     login: String,
     motDePasse: String
 })
-module.exports = mongoose.model('Utilisateur', utilisateurSchema)
+
+let UtilisateurModel = mongoose.model('Utilisateur', utilisateurSchema);
+
+UtilisateurModel.getAll = () => {
+    return UtilisateurModel.find({});
+}
+
+export default UtilisateurModel;
