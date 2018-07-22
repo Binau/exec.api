@@ -1,11 +1,12 @@
 import {TestConf} from "../bean/conf/test.conf";
 import {FileUtils} from "../tool/file.utils";
-import {ExecEngine, BuildParam} from "./exec.engine";
+import {ExecEngine} from "./exec.engine";
 import * as Fs from "fs";
 import {BufferUtils} from "../tool/buffer.utils";
 import * as deepEqual from 'deep-equal';
 import {CoreEngine} from "./core.engine";
 import {TestInfo, TestParam, TestResult} from "../bean/api/test.ws.api";
+import {ExecParam} from "../bean/api/exec.ws.api";
 
 export class TestEngine {
 
@@ -28,7 +29,7 @@ export class TestEngine {
         let confTest = await FileUtils.loadConf<TestConf>(confFile);
 
 
-        let buildParam: BuildParam = {
+        let buildParam: ExecParam = {
             idImage: confTest.imgName,
             files: []
         };

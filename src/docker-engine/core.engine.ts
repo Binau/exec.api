@@ -6,12 +6,7 @@ import {ImageConf} from "../bean/conf/image.conf";
 import * as Fs from "fs";
 import {Pack} from 'tar';
 import {StreamUtils} from "../tool/stream.utils";
-
-
-export class FileToInject {
-    filePath: string;
-    code: string;
-}
+import {FileToInject} from "../bean/api/exec.ws.api";
 
 export class CoreEngine {
 

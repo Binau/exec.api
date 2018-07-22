@@ -7,7 +7,7 @@ import {TestEngine} from '../docker-engine/test.engine';
 
 
 export class TestWs extends WsServer {
-    public debug: boolean = true;
+
     public running = false;
 
     protected async onMessage(data: TestParam): Promise<void> {
