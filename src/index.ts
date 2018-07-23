@@ -37,7 +37,6 @@ class Main {
             .debug()
             .loadHttp(new TestHttp(), '/rest')
             .loadHttp(new FormationHttp(), '/rest')
-
             .loadHttp(new UtilisateurHttp(), '/rest')
             .loadWs(TestWs, '/ws/runTest');
             .loadWs(ExecWs, '/ws/exec');
