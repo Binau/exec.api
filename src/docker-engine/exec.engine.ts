@@ -1,17 +1,9 @@
 import {DockerClient} from './docker.client';
 import {ImageBean} from '../bean/image.bean';
-import {CoreEngine, FileToInject} from './core.engine';
+import {CoreEngine} from './core.engine';
 import {PromiseUtils} from '../tool/promise.utils';
-import {ExecLog} from '../bean/api/test.ws.api';
+import {ExecParam, ExecLog} from "../bean/api/exec.ws.api";
 
-
-export class BuildParam {
-    // Id de l'image
-    idImage: string;
-    // Codes à injecter
-    files: FileToInject[];
-
-}
 
 export class ExecRequest {
     params?: any;
@@ -30,7 +22,7 @@ export class ExecEngine {
         this.dockerClient = this.coreEngine.dockerClient
     }
 
-    public static async create(coreEngine: CoreEngine, param: BuildParam): Promise<ExecEngine> {
+    public static async create(coreEngine: CoreEngine, param: ExecParam): Promise<ExecEngine> {
         let execEngine = new ExecEngine(coreEngine);
         await execEngine.build(param);
         return execEngine;
@@ -39,10 +31,10 @@ export class ExecEngine {
 
     /**
      * Creer et démarre un container et inject les fichiers fournis
-     * @param {BuildParam} param
+     * @param {ExecParam} param
      * @returns {Promise<void>}
      */
-    private async build(param: BuildParam) {
+    private async build(param: ExecParam) {
 
         // Recuperation/ creation de l'image
         let imgBean: ImageBean = await this.coreEngine.getOrBuildImg(param.idImage);

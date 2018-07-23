@@ -1,3 +1,5 @@
+import {ExecLog} from "./exec.ws.api";
+
 export class Code {
     title: string;
     tag: string;
@@ -35,10 +37,4 @@ export class TestResult {
     success: boolean;
 }
 
-export class ExecLog {
-    isInfo?: true;
-    isError?: true;
-
-    message?: string;
-}
 

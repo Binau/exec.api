@@ -3,12 +3,14 @@ import {HttpServer} from "http-typescript";
 import {TestHttp} from "./http/test.http";
 import {TestWs} from "./http/test.ws";
 import {TestInfo} from './bean/api/test.ws.api';
+
 import { FormationHttp } from './http/formation.http';
 import { UtilisateurHttp } from './http/utilisateur.http';
 
 import {CoreEngine} from "./docker-engine/core.engine";
 import {TestEngine} from "./docker-engine/test.engine";
 import {ExecEngine} from "./docker-engine/exec.engine";
+import {ExecWs} from "./http/exec.ws";
 
 
 class Main {
@@ -33,11 +35,13 @@ class Main {
         let server = new HttpServer();
         server
             .debug()
-            .loadHttp(new TestHttp(), '/rest')      
+            .loadHttp(new TestHttp(), '/rest')
             .loadHttp(new FormationHttp(), '/rest')
+
             .loadHttp(new UtilisateurHttp(), '/rest')
             .loadWs(TestWs, '/ws/runTest');
-        server.listen(8334);
+            .loadWs(ExecWs, '/ws/exec');
+        server.listen(8333);
 
     }
 
