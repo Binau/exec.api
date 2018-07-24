@@ -1,7 +1,7 @@
 import {GET, HttpContext, POST} from "http-typescript";
 import * as mongoose from 'mongoose';
 
-let UtilisateurModel = require('../bean/utilisateur/utilisateur')
+import { Utilisateur } from "../bean/utilisateur/utilisateurBDD";
 
 export class UtilisateurHttp {
 
@@ -18,7 +18,7 @@ export class UtilisateurHttp {
             }
         })
 
-        var user = new UtilisateurModel(context.body)
+        var user = new Utilisateur(context.body)
     
         user.save((err, result) => {
             if(err){
