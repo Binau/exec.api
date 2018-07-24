@@ -13,6 +13,8 @@ export class UtilisateurHttp {
             if(!err){
                 console.log('connected to mongo')
                 dbConnecte = true;
+            }else{
+                context.koaContext.response.status = 500;
             }
         })
 
@@ -20,16 +22,13 @@ export class UtilisateurHttp {
     
         user.save((err, result) => {
             if(err){
+                context.koaContext.response.status = 500;
                 console.log('Erreur')
             }else{
+                context.koaContext.response.status = 200;
                 console.log('utilisateur enregistrer !!!')
             }
-            
-            //renvoi response('200');
         })
-
-        
-        //renvoi response('500');
         if(dbConnecte){
             db.disconnect()
         }
