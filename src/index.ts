@@ -11,12 +11,26 @@ import {CoreEngine} from "./docker-engine/core.engine";
 import {TestEngine} from "./docker-engine/test.engine";
 import {ExecEngine} from "./docker-engine/exec.engine";
 import {ExecWs} from "./http/exec.ws";
-
+import * as mongoose from 'mongoose';
+mongoose.Promise = Promise
 
 class Main {
 
 
     public async run() {
+
+
+        mongoose.connect(
+            'mongodb://test:test123@ds245661.mlab.com:45661/exec', 
+            { keepAlive: 1, useNewUrlParser: true },
+             (err) => {
+            if (!err){
+                console.log('Connecte à la BDD')
+            }
+                
+        }).catch((error) => {
+            console.log('Erreur lors de la connection à la BDD')
+        });
 
         //await this.testExec();
         // await this.testInfioniteExec();
@@ -41,6 +55,9 @@ class Main {
             .loadWs(TestWs, '/ws/runTest')
             .loadWs(ExecWs, '/ws/exec');
         server.listen(8333);
+
+
+
 
     }
 
