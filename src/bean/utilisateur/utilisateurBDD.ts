@@ -15,6 +15,7 @@ export var utilisateurSchema: Schema = new Schema({
 utilisateurSchema.pre("save", function(next) {
   let now = new Date();
   if (!this.dateDeCreation) {
+    console.log('MAJ de la date de creation')
     this.dateDeCreation = now;
   }
   next();
