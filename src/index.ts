@@ -7,10 +7,16 @@ import {UtilisateurHttp} from './http/utilisateur.http';
 import {TestHttp} from "./http/docker-engine/test.http";
 import {ExecWs} from "./http/docker-engine/exec.ws";
 import {TestWs} from "./http/docker-engine/test.ws";
+import {CoreEngine} from "./docker-engine/core.engine";
+import {ExecHttp} from "./http/docker-engine/exec.http";
 
 class Index {
 
-    public run() {
+    public async run() {
+
+        // Todo Classe permettant de gerer la creation du coreegnine + passage au différent module
+        // Todo utiliser conf application
+        let coreEngine = await CoreEngine.loadEngine('data/docker/conf.json');
 
         new HttpServer()
             .debug()
@@ -20,8 +26,9 @@ class Index {
 
             // Geston des tests et executions
             .loadHttp(new TestHttp(), '/rest/tests')
-            .loadWs(TestWs, '/ws/runTest')
-            .loadWs(ExecWs, '/ws/exec')
+            .loadHttp(new ExecHttp(coreEngine), '/rest/execs')
+            .loadWs(TestWs, '/ws/runTest', coreEngine)
+            .loadWs(ExecWs, '/ws/exec', coreEngine)
 
             // listen
             .listen(8333);

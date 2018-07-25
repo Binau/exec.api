@@ -8,13 +8,17 @@ import {ExecParam} from "../../docker-engine/api/exec.ws.api";
 
 export class ExecWs extends WsServer {
 
+    public constructor(private coreEngine: CoreEngine) {
+        super();
+
+    }
+
     protected async onMessage(execPrm: ExecParam): Promise<void> {
 
         // todo max files execPrm ?
         // todo fichier de boot présent dans execPrm ?
 
-        let coreEngine = await CoreEngine.loadEngine('data/docker/conf.json');
-        let execEngine = await ExecEngine.create(coreEngine.debug(), execPrm);
+        let execEngine = await ExecEngine.create(this.coreEngine, execPrm);
 
         console.log('Execution, Parametres : ', execPrm);
 

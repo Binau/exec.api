@@ -37,12 +37,18 @@ export class CoreEngine {
         return new CoreEngine(engineConf);
     }
 
-    public async loadImgConf(imageName: string): Promise<ImageBean> {
+    public async loadImgConf(imgId) : Promise<ImageConf> {
+        let rootImgDir = `${this.engineConf.dockerImgsRoot}/${imgId}`;
+        // Recuperation de la conf
+        return await FileUtils.loadConf<ImageConf>(`${rootImgDir}/conf.json`);
+    }
+
+    public async loadImgBean(imageName: string): Promise<ImageBean> {
         let rootImgDir = `${this.engineConf.dockerImgsRoot}/${imageName}`;
 
         try {
             // Recuperation de la conf
-            let conf = await FileUtils.loadConf<ImageConf>(`${rootImgDir}/conf.json`);
+            let conf = await this.loadImgConf(imageName);
 
             let imgBean: ImageBean = new ImageBean();
             imgBean.name = imageName;
@@ -89,7 +95,7 @@ export class CoreEngine {
 
     public async getOrBuildImg(idImage: string): Promise<ImageBean> {
 
-        let imgBean: ImageBean = await this.loadImgConf(idImage);
+        let imgBean: ImageBean = await this.loadImgBean(idImage);
         let imageId : string = await this.dockerClient.getImage(imgBean.fullName);
         if (!imageId) {
             await this.buildFromDir(imgBean);

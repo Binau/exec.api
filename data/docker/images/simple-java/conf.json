@@ -1,6 +1,7 @@
 {
   "version":"0.0.1",
-  "bootFile":"src/index.java",
-  "description" : "Exécution du java",
-  "langage" : "java"
+  "description" : "Execution du java sur un openjdk 1.8.0.111-internal",
+  "langage" : "java",
+  "bootFileName":"src/index.java",
+  "bootFileTemplate": "public class Main { \n public static void main (String[] args){ \n System.out.println(\"Hello Java\"); \n } \n }"
 }
