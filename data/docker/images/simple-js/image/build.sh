@@ -1,2 +1,4 @@
 #!/bin/sh
-echo "No build ..."
+
+#BUILD
+# nothing in js

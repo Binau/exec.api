@@ -1,9 +1,7 @@
 import {HttpContext, WsServer} from 'http-typescript';
-import {TestInfo, TestParam} from '../bean/api/test.ws.api';
-import {CoreEngine} from '../docker-engine/core.engine';
-import {TestEngine} from '../docker-engine/test.engine';
-
-
+import {TestInfo, TestParam} from '../../docker-engine/api/test.ws.api';
+import {CoreEngine} from '../../docker-engine/core.engine';
+import {TestEngine} from '../../docker-engine/test.engine';
 
 
 export class TestWs extends WsServer {
@@ -16,14 +14,14 @@ export class TestWs extends WsServer {
         this.running = true;
 
         let coreEngine = await CoreEngine.loadEngine('data/docker/conf.json');
-        let testEngine = new TestEngine(coreEngine.debug());
+        let testEngine = await TestEngine.create(coreEngine, data);
 
         console.log('params : ', data);
 
         try {
-            await testEngine.run(data, (testI: TestInfo) => {
-                this.send(testI);
-            });
+            await testEngine.run(testI =>
+                this.send(testI)
+            );
         } catch (e) {
             console.log(e);
         }

@@ -1,33 +1,31 @@
-import {TestConf} from "../bean/conf/test.conf";
+import {TestConf} from "./conf/test.conf";
 import {FileUtils} from "../tool/file.utils";
 import {ExecEngine} from "./exec.engine";
 import * as Fs from "fs";
 import {BufferUtils} from "../tool/buffer.utils";
 import * as deepEqual from 'deep-equal';
 import {CoreEngine} from "./core.engine";
-import {TestInfo, TestParam, TestResult} from "../bean/api/test.ws.api";
-import {ExecParam} from "../bean/api/exec.ws.api";
+import {TestInfo, TestParam, TestResult} from "./api/test.ws.api";
+import {ExecParam} from "./api/exec.ws.api";
 
 export class TestEngine {
 
-
-    constructor(
-        private coreEngine: CoreEngine) {
-
+    private constructor(
+        private execEngine : ExecEngine,
+        private conf : TestConf) {
     }
 
-    public async run(param: TestParam, resultCb: (testExec: TestInfo) => void): Promise<void> {
+    public static async create(coreEngine: CoreEngine, param: TestParam) : Promise<TestEngine> {
 
         // TODO
         // FIXME param.id doit faire partie des valeurs possible, tester pour eviter l'injection de chemins
 
-        let confPath = `${this.coreEngine.engineConf.dockerTestsRoot}/${param.id}`;
-        let confFile = `${this.coreEngine.engineConf.dockerTestsRoot}/${param.id}.json`;
+        let confPath = `${coreEngine.engineConf.dockerTestsRoot}/${param.id}`;
+        let confFile = `${coreEngine.engineConf.dockerTestsRoot}/${param.id}.json`;
 
         console.log(`Chargement du test ${confFile}`, param);
 
         let confTest = await FileUtils.loadConf<TestConf>(confFile);
-
 
         let buildParam: ExecParam = {
             idImage: confTest.imgName,
@@ -59,13 +57,19 @@ export class TestEngine {
             });
         }
 
-        let execEngine = await ExecEngine.create(this.coreEngine, buildParam);
+        let execEngine = await ExecEngine.create(coreEngine, buildParam);
+
+        return new TestEngine(execEngine, confTest);
+    }
+
+    public async run(resultCb: (testInfo: TestInfo) => void): Promise<void> {
+
 
         let idTest = 0;
         let stopTests = false;
 
         // Execution de chacun des tests
-        for (let t of confTest.tests) {
+        for (let t of this.conf.tests) {
             let localTestId = idTest;
             let resultSend = false;
 
@@ -77,16 +81,21 @@ export class TestEngine {
             };
 
             // Injection des tests
-            await execEngine.run({
+            await this.execEngine.run({
                 params: t.param,
+
+                // Logs de retour
                 logCallBack: l => {
 
+                    console.log(l);
+
+                    // Timeout => on stop les tests
                     if (l.isError && l.message === 'Timeout') {
                         stopTests = true;
                     }
 
-                    if ((l as any).isResult) {
-                        testResult.out = (l  as any).result;
+                    if (l.isInfo && l.message.startsWith('#R#')) {
+                        testResult.out = JSON.parse(l.message.substr(3));
                         testResult.success = deepEqual(t.result, testResult.out);
 
                         resultCb({
@@ -114,8 +123,7 @@ export class TestEngine {
             idTest++;
         }
 
-        await execEngine.stop();
+        await this.execEngine.stop();
     }
-
 
 }
