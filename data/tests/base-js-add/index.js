@@ -1,4 +1,4 @@
-const printTestResult = require('./std.out').printTestResult;
+const printTestResult = require('../../docker/images/simple-js/image/src/std.out.result').printTestResult;
 
 // Code injecté
 let add =

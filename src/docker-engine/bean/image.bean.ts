@@ -1,4 +1,4 @@
-import {ImageConf} from "./conf/image.conf";
+import {ImageConf} from "../conf/image.conf";
 
 export class ImageBean {
 

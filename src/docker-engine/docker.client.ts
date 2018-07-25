@@ -190,7 +190,7 @@ export class DockerClient {
                 this.logDebug(`[DOCKER CLIENT] (FIN) /containers/${idContainer}/start`);
                 this.logDebugResp(resp);
 
-                let logs: any = await StreamUtils.readToString(resp);
+                let logs: string = await StreamUtils.readToString(resp);
                 if (resp.statusCode == 204) {
                     this.logDebug(`[DOCKER CLIENT] - Resultat : `, logs);
                     res();
@@ -331,6 +331,11 @@ export class DockerClient {
         });
     };
 
+    /**
+     * Lancement de l'execution
+     * @param idExec
+     * @param logCb
+     */
     public async startExec(idExec: string, logCb?: (log: string) => void): Promise<void> {
 
         this.logDebug(`[DOCKER CLIENT] (POST) /exec/${idExec}/start ...`);
@@ -346,8 +351,9 @@ export class DockerClient {
                 this.logDebugResp(resp);
                 if (resp.statusCode == 200) {
                     resp.on('data', d => {
-                        this.logDebug(d);
-                        logCb && logCb(BufferUtils.bufferOrStrToStr(d));
+                        let strData = BufferUtils.bufferOrStrToStr(d);
+                        this.logDebug(strData);
+                        logCb && logCb(strData);
                     });
                     resp.on('end', (d) => {
                         res();

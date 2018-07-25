@@ -1,12 +1,12 @@
 import {DockerClient} from "./docker.client";
-import {EngineConf} from "../bean/conf/engine.conf";
-import {ImageBean} from "../bean/image.bean";
+import {EngineConf} from "./conf/engine.conf";
+import {ImageBean} from "./bean/image.bean";
 import {FileUtils} from "../tool/file.utils";
-import {ImageConf} from "../bean/conf/image.conf";
+import {ImageConf} from "./conf/image.conf";
 import * as Fs from "fs";
 import {Pack} from 'tar';
 import {StreamUtils} from "../tool/stream.utils";
-import {FileToInject} from "../bean/api/exec.ws.api";
+import {FileToInject} from "./api/exec.ws.api";
 
 export class CoreEngine {
 

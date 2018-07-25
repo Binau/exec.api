@@ -1,4 +1,4 @@
-FROM node:10.4-alpine
+FROM java:8-jdk-alpine
 
 RUN apk add --no-cache sed
 
@@ -18,3 +18,5 @@ ADD build.sh .
 RUN chmod +x build.sh
 
 ADD src ./src
+
+CMD ["sh"]

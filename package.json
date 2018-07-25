@@ -14,9 +14,7 @@
   "scripts": {
     "start": "npm run build.ts && node ./tmp/src/index",
     "build.ts": "tsc",
-    "test.node": "npm run build.ts && mocha tmp/test/01*.js",
-    "test.koa": "npm run build.ts && mocha tmp/test/02*.js",
-    "test.http.typescript": "npm run build.ts && mocha tmp/test/03*.js"
+    "test.ts": "npm run build.ts && mocha tmp/test/01*.js"
   },
   "dependencies": {
     "deep-equal": "^1.0.1",
