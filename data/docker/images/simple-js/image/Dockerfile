@@ -18,3 +18,5 @@ ADD build.sh .
 RUN chmod +x build.sh
 
 ADD src ./src
+
+CMD ["sh"]
