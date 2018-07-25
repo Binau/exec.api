@@ -1,9 +1,9 @@
 import {HttpContext, WsServer} from 'http-typescript';
-import {TestInfo, TestParam} from '../bean/api/test.ws.api';
-import {CoreEngine} from '../docker-engine/core.engine';
-import {TestEngine} from '../docker-engine/test.engine';
-import {ExecEngine} from "../docker-engine/exec.engine";
-import {ExecParam} from "../bean/api/exec.ws.api";
+import {TestInfo, TestParam} from '../../docker-engine/api/test.ws.api';
+import {CoreEngine} from '../../docker-engine/core.engine';
+import {TestEngine} from '../../docker-engine/test.engine';
+import {ExecEngine} from "../../docker-engine/exec.engine";
+import {ExecParam} from "../../docker-engine/api/exec.ws.api";
 
 
 export class ExecWs extends WsServer {
@@ -26,6 +26,8 @@ export class ExecWs extends WsServer {
             });
         } catch (e) {
             console.log(e);
+        } finally {
+            execEngine.stop();
         }
     }
 }

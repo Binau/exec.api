@@ -1,8 +1,8 @@
 import {DockerClient} from './docker.client';
-import {ImageBean} from '../bean/image.bean';
+import {ImageBean} from './bean/image.bean';
 import {CoreEngine} from './core.engine';
 import {PromiseUtils} from '../tool/promise.utils';
-import {ExecParam, ExecLog} from "../bean/api/exec.ws.api";
+import {ExecParam, ExecLog} from "./api/exec.ws.api";
 
 
 export class ExecRequest {
@@ -52,34 +52,41 @@ export class ExecEngine {
 
     public async run(req?: ExecRequest): Promise<void> {
 
-        // Preparation des parametres par defaut
-        req = req || {};
-        req.timeout = req.timeout || 5000; // 5s par defaut
+        // Lancement du build
+        await this.startScript('./buildWrapper.sh', req);
 
         // Lancement de l'execution
-        let idExec = await this.dockerClient.createExec(this.idContainer, ['./run.sh', JSON.stringify(req.params)]);
+        await this.startScript('./runWrapper.sh', req);
+    }
+
+
+    private async startScript(script: string, req?: ExecRequest): Promise<void> {
+
+        // Preparation des parametres par defaut
+        req = req || {};
+        req.timeout = req.timeout || 3000;
+
+        // Lancement de l'execution
+        let idExec = await this.dockerClient.createExec(this.idContainer, [script, JSON.stringify(req.params)]);
 
         try {
-            await PromiseUtils.timeout(
-                this.dockerClient.startExec(
-                    idExec,
-                    (l) => {
-                        if (!l || l === '\n') return;
-                        try {
-                            let testResp: ExecLog = JSON.parse(l);
 
-                            let isLog = (testResp.isError || testResp.isInfo);
-                            if (isLog) req.logCallBack(testResp);
+            let promiseExec: Promise<void> = this.dockerClient.startExec(
+                idExec,
+                // Traitement des logs
+                (logs) => {
+                    // Mapping des sorties en execLog
+                    let execLogs = this.mapExecLogsToExecLogs(logs, '#L#');
 
-                        } catch (e) {
-                            // La reponse n'est pas en JSON, c'est une erreur
-                            req.logCallBack && req.logCallBack({
-                                isError: true,
-                                message: l
-                            });
-                        }
+                    // Si le log est vide, on le prend pas en compte
+                    if (!execLogs) return;
+                    // Appel du callback avec l'execLog
+                    execLogs.forEach(el => req.logCallBack(el));
 
-                    }), req.timeout);
+                });
+
+            // Attend l'execution avec un timeout
+            await PromiseUtils.timeout(promiseExec, req.timeout);
         } catch (e) {
             if (e == PromiseUtils.TIMEOUT) {
                 this.stop();
@@ -90,16 +97,44 @@ export class ExecEngine {
             }
             else throw e;
         }
-
     }
 
     public async stop(): Promise<void> {
 
         // Stop + suppression après timeout
-        await this.dockerClient.stopContainer(this.idContainer);
-        await this.dockerClient.deleteContainer(this.idContainer);
-
+        // await this.dockerClient.stopContainer(this.idContainer);
+        // await this.dockerClient.deleteContainer(this.idContainer);
         return;
+    }
+
+    private mapExecLogsToExecLogs(logs: string, prefix: string): ExecLog[] {
+
+        if (!logs || !prefix) return;
+        let execLogs: ExecLog[];
+
+        // Suppression du dernier saut de ligne
+        if (logs.endsWith('\n')) logs = logs.substr(0, logs.length - 1);
+
+        // Traduit chacune des ligne en execLog( suivant prefix)
+        execLogs = logs.split('\n').map<ExecLog>(
+            (l) => {
+                let execLog: ExecLog;
+                if (l.startsWith(prefix)) {
+                    l = l.substr(prefix.length);
+                    execLog = {
+                        isInfo: true,
+                        message: l
+                    };
+                } else {
+                    execLog = {
+                        isError: true,
+                        message: l
+                    };
+                }
+                return execLog;
+            }
+        );
+        return execLogs;
     }
 
 

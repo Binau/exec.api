@@ -1,4 +1,4 @@
-const printTestResult = require('./std.out').printTestResult;
+const printTestResult = require('./std.out.result').printTestResult;
 
 // Code injecté
 let mult =
