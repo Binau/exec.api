@@ -1,8 +1,22 @@
 import {GET, HttpContext, POST} from "http-typescript";
 import * as mongoose from 'mongoose';
-mongoose.Promise = Promise
 
 import { Utilisateur } from "../bean/utilisateur/utilisateurBDD";
+
+
+mongoose.Promise = Promise;
+mongoose.connect(
+    // TODO parametrage
+    'mongodb://test:test123@ds245661.mlab.com:45661/exec',
+    {keepAlive: 1, useNewUrlParser: true},
+    (err) => {
+        if (!err) {
+            console.log('Connecte à la BDD')
+        }
+
+    }).catch((error) => {
+    console.log('Erreur lors de la connection à la BDD', error)
+});
 
 export class UtilisateurHttp {
 
