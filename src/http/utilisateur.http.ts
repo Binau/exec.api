@@ -1,39 +1,30 @@
 import {GET, HttpContext, POST} from "http-typescript";
 import * as mongoose from 'mongoose';
+mongoose.Promise = Promise
 
-let UtilisateurModel = require('../bean/utilisateur/utilisateur')
+import { Utilisateur } from "../bean/utilisateur/utilisateurBDD";
 
 export class UtilisateurHttp {
 
     @POST('/utilisateur/enregistrer')
     public async enregistrerUtilisateur(context: HttpContext){
-        
-        let dbConnecte = false;
-        let db = mongoose.connect('mongodb://test:test123@ds245661.mlab.com:45661/exec', { useNewUrlParser: true }, (err) => {
-            if(!err){
-                console.log('connected to mongo')
-                dbConnecte = true;
-            }
-        })
-
-        var user = new UtilisateurModel(context.body)
-    
-        user.save((err, result) => {
-            if(err){
-                console.log('Erreur')
-            }else{
-                console.log('utilisateur enregistrer !!!')
-            }
+        return await new Promise((resolve, reject) => {
+            let user = new Utilisateur(context.body);
             
-            //renvoi response('200');
-        })
-
-        
-        //renvoi response('500');
-        if(dbConnecte){
-            db.disconnect()
-        }
-        
+            user.save((err, result) => {
+                if (err) {
+                    console.error('Erreur lors de la sauvegarde')
+                    
+                    context.koaContext.response.body = 'Erreur lors de la sauvegarde'
+                    context.koaContext.response.status=500
+                    reject(err)
+                }else{
+                    resolve();
+                }
+            })
+        });
     }
+
+
 
 }
