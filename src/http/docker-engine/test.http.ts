@@ -9,7 +9,7 @@ export class TestHttp {
 
     private rootTestsDir = 'data/tests';
 
-    @GET('/tests')
+    @GET('')
     public async getTests(): Promise<TestInfos[]> {
 
         let filesName: string[] = await Fs.promises.readdir(this.rootTestsDir);
@@ -27,7 +27,7 @@ export class TestHttp {
         return tests;
     }
 
-    @GET('/tests/:id')
+    @GET('/:id')
     public async getTestById(context: HttpContext): Promise<TestInfos> {
 
         let id = context.params.id;
