@@ -102,8 +102,8 @@ export class ExecEngine {
     public async stop(): Promise<void> {
 
         // Stop + suppression après timeout
-        // await this.dockerClient.stopContainer(this.idContainer);
-        // await this.dockerClient.deleteContainer(this.idContainer);
+        await this.dockerClient.stopContainer(this.idContainer);
+        await this.dockerClient.deleteContainer(this.idContainer);
         return;
     }
 
