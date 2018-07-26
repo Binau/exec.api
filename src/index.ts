@@ -1,4 +1,3 @@
-import {Pack} from 'tar';
 import {HttpServer} from "http-typescript";
 
 import {FormationHttp} from './http/formation.http';
@@ -34,6 +33,4 @@ try {
 } catch (e) {
     console.log(e);
 }
-
-
 
