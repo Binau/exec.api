@@ -8,52 +8,64 @@ import {Pack} from 'tar';
 import {StreamUtils} from "../tool/stream.utils";
 import {FileToInject} from "./api/exec.ws.api";
 import {AppContext} from "../common/app.context";
-import {DockerContext} from "./bean/docker.context";
 import {Level, Logger} from "../common/log.service";
 
 export class CoreEngine {
 
     public dockerClient: DockerClient;
-    private logSrv: Logger;
+    public engineConf: EngineConf;
 
-    private constructor(
-        public engineConf: EngineConf
-    ) {
-        this.logSrv = AppContext.instance.logService.getLogger('Docker-engine', Level.DEBUG);
-
-        // Creation d'un client vers le docker machine local
-        this.logSrv.debug(`Chargement du client docker pour ${engineConf.host}:${engineConf.port}`);
-        this.dockerClient = new DockerClient(engineConf.host, engineConf.port);
-
-        // Configuration des certificats
-        this.logSrv.debug(`Chargement des certificats docker depuis ${engineConf.sslRoot}`);
-        this.dockerClient
-            .activeSsl('key.pem', 'cert.pem', 'ca.pem', engineConf.sslRoot);
-
+    public get availablesImgsId(): string[] {
+        return this._availablesImgsId;
     }
 
-    /*
-    ********************** LOAD
-     */
-    public static async load(): Promise<boolean> {
-        let logSrv = AppContext.instance.logService.getLogger('Docker-engine');
-        logSrv.log('Chargement du coreEngine...');
+    private appContext: AppContext;
+    private logSrv: Logger;
+    private _availablesImgsId: string[];
 
-        let appContext: AppContext = AppContext.instance;
-        // Initialisation du context
-        appContext.dockerContext = new DockerContext();
+    private constructor() {
+        this.appContext = AppContext.instance;
+        this.logSrv = AppContext.instance.logService.getLogger('Docker-CoreEngine', Level.DEBUG);
+    }
+
+    private async init(): Promise<boolean> {
 
         // Chargement de la conf
         try {
-            logSrv.log('Chargement de la conf...');
-            let engineConf = await FileUtils.loadConf<EngineConf>(appContext.appConf.confDocker);
-            appContext.dockerContext.coreEngine = new CoreEngine(engineConf);
+            this.logSrv.log('Chargement de la conf...');
+            this.engineConf = await FileUtils.loadConf<EngineConf>(this.appContext.appConf.confDocker);
+
+            // Creation d'un client vers le docker machine local
+            this.logSrv.debug(`Chargement du client docker pour ${this.engineConf.host}:${this.engineConf.port}`);
+            this.dockerClient = new DockerClient(this.engineConf.host, this.engineConf.port);
+
+            // Configuration des certificats
+            this.logSrv.debug(`Chargement des certificats docker depuis ${this.engineConf.sslRoot}`);
+            this.dockerClient
+                .activeSsl('key.pem', 'cert.pem', 'ca.pem', this.engineConf.sslRoot);
+
+            this.logSrv.log('Chargement des images présentent dans le projet');
+            this._availablesImgsId = await Fs.promises.readdir(this.engineConf.dockerImgsRoot);
+
         } catch (e) {
-            logSrv.error('Erreur au chargement de la conf', e);
+            this.logSrv.error(`Erreur a l'initialisation du CoreEngine`, e);
             return false;
         }
 
         return true;
+    }
+
+
+    /*
+    ********************** LOAD
+     */
+
+    public static async loadInContext(): Promise<boolean> {
+        let appContext: AppContext = AppContext.instance;
+        appContext.dockerContext = {
+            coreEngine: new CoreEngine()
+        };
+        return appContext.dockerContext.coreEngine.init();
     }
 
     public async loadImgConf(imgId): Promise<ImageConf> {

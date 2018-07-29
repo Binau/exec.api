@@ -7,6 +7,7 @@ import {IncomingMessage} from "http";
 
 export class DockerClient {
 
+    private static REQ_TIMEOUT: number = 3000;
     private _debug: boolean = false;
     public ssl: {
         key?: Buffer,
@@ -105,11 +106,11 @@ export class DockerClient {
                 this.logDebug(`[DOCKER CLIENT] (FIN) /images/${imgName}/json`);
                 this.logDebugResp(resp);
 
-                if (resp.statusCode == 200 ) {
+                if (resp.statusCode == 200) {
                     let result: any = await StreamUtils.readToObj<any>(resp);
                     this.logDebug(`[DOCKER CLIENT] - Resultat : `, result);
                     res(result.Id);
-                } else if (resp.statusCode == 404 ) {
+                } else if (resp.statusCode == 404) {
                     this.logDebug(`[DOCKER CLIENT] - Resultat : Introuvable`);
                     res(null);
                 } else {
@@ -126,7 +127,11 @@ export class DockerClient {
                 this.logErrorStatus(opts);
                 rej(e);
             });
+            /*req.once('socket', s => s.setTimeout(DockerClient.REQ_TIMEOUT, () => {
+                s.destroy();
+            }));*/
             req.end();
+
 
         });
     }
@@ -170,7 +175,6 @@ export class DockerClient {
                 OpenStdin: true,
                 NetworkDisabled: true,
             }));
-
             req.end();
 
         });
@@ -207,7 +211,6 @@ export class DockerClient {
                 this.logErrorStatus(opts);
                 rej(e);
             });
-
             req.end();
 
         });
@@ -243,7 +246,6 @@ export class DockerClient {
                 this.logErrorStatus(opts);
                 rej(e);
             });
-
             req.end();
 
         });
@@ -279,7 +281,6 @@ export class DockerClient {
                 this.logErrorStatus(opts);
                 rej(e);
             });
-
             req.end();
 
         });
@@ -325,7 +326,6 @@ export class DockerClient {
                 AttachStderr: true,
                 Cmd: cmd,
             }));
-
             req.end();
 
         });

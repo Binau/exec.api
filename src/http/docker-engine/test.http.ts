@@ -12,6 +12,9 @@ export class TestHttp {
     @GET('')
     public async getTests(): Promise<TestInfos[]> {
 
+
+
+
         let filesName: string[] = await Fs.promises.readdir(this.rootTestsDir);
 
         let filteredFileNames = filesName.filter(v => {

@@ -1,7 +1,7 @@
 {
   "port" : 8333,
 
-  "confDocker" : "data/docker/dockerConf.json"
+  "confDocker" : "data/docker/docker.conf.json"
 
 
 

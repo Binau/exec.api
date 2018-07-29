@@ -15,9 +15,14 @@ export class ExecHttp {
         this.loggerSrv = AppContext.instance.logService.getLogger('Http', Level.INFO);
     }
 
+    private logHeader(context: HttpContext): string {
+        return `(${context.koaContext.method} ${context.koaContext.path})`;
+    }
+
     @GET('')
     public async getExecs(context: HttpContext): Promise<ExecInfos[]> {
-        this.loggerSrv.error(`(${context.koaContext.method} ${context.koaContext.path}) [501] Non implémentée`);
+
+        this.loggerSrv.error(`${this.logHeader(context)} [501] Non implémentée`);
         context.koaContext.status = 501;
         return;
     }
@@ -25,13 +30,12 @@ export class ExecHttp {
     @GET('/:id')
     public async getExec(context: HttpContext): Promise<ExecInfos> {
 
-        this.loggerSrv.log(`(${context.koaContext.method} ${context.koaContext.path}) Traitement`);
+        this.loggerSrv.debug(`${this.logHeader(context)} Traitement`);
 
         let id = context.params.id;
-
         let conf = await this.coreEngine.loadImgConf(id);
 
-        this.loggerSrv.debug(`(${context.koaContext.method} ${context.koaContext.path}) Conf : `, conf);
+        this.loggerSrv.debug(`${this.logHeader(context)} Conf : `, conf);
 
         if (!!conf) return {
             langage: conf.langage,
@@ -40,7 +44,7 @@ export class ExecHttp {
             bootFileTemplate: conf.bootFileTemplate
         };
 
-        this.loggerSrv.warn(`(${context.koaContext.method} ${context.koaContext.path}) Infos introuvables`);
+        this.loggerSrv.warn(`${this.logHeader(context)} Infos introuvables`);
         context.koaContext.status = 404;
         return;
     }

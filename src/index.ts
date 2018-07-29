@@ -65,7 +65,7 @@ class App {
         }
 
         // Chargement du docker Engine
-        if (!await CoreEngine.load()) return false;
+        if(!await CoreEngine.loadInContext()) return false;
 
         return true;
     }
