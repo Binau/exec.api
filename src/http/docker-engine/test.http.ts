@@ -7,7 +7,7 @@ import {TestInfos} from "../../docker-engine/api/test.http.api";
 
 export class TestHttp {
 
-    private rootTestsDir = 'data/tests';
+    private rootTestsDir = 'data/docker/tests';
 
     @GET('')
     public async getTests(): Promise<TestInfos[]> {

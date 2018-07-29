@@ -24,7 +24,9 @@ export class ExecEngine {
 
     public static async create(coreEngine: CoreEngine, param: ExecParam): Promise<ExecEngine> {
         let execEngine = new ExecEngine(coreEngine);
-        await execEngine.build(param);
+        let ok = await execEngine.build(param);
+        if (!ok) return null;
+
         return execEngine;
     }
 
@@ -34,16 +36,19 @@ export class ExecEngine {
      * @param {ExecParam} param
      * @returns {Promise<void>}
      */
-    private async build(param: ExecParam) {
+    private async build(param: ExecParam): Promise<boolean> {
 
         // Recuperation/ creation de l'image
         let imgBean: ImageBean = await this.coreEngine.getOrBuildImg(param.idImage);
+        if (!imgBean) return false;
 
         // Creation + demarrage container
         this.idContainer = await this.coreEngine.startContainer(imgBean);
 
         // Ecriture de chacun des fichiers
         this.coreEngine.writeFiles(this.idContainer, param.files);
+
+        return true;
     }
 
     public debug() {

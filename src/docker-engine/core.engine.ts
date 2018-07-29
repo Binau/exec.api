@@ -7,61 +7,84 @@ import * as Fs from "fs";
 import {Pack} from 'tar';
 import {StreamUtils} from "../tool/stream.utils";
 import {FileToInject} from "./api/exec.ws.api";
+import {AppContext} from "../common/app.context";
+import {DockerContext} from "./bean/docker.context";
+import {Level, Logger} from "../common/log.service";
 
 export class CoreEngine {
 
     public dockerClient: DockerClient;
-
-    public debug() : CoreEngine {
-        this.dockerClient.debug();
-        return this;
-    }
+    private logSrv: Logger;
 
     private constructor(
         public engineConf: EngineConf
     ) {
+        this.logSrv = AppContext.instance.logService.getLogger('Docker-engine', Level.DEBUG);
+
         // Creation d'un client vers le docker machine local
+        this.logSrv.debug(`Chargement du client docker pour ${engineConf.host}:${engineConf.port}`);
         this.dockerClient = new DockerClient(engineConf.host, engineConf.port);
+
         // Configuration des certificats
+        this.logSrv.debug(`Chargement des certificats docker depuis ${engineConf.sslRoot}`);
         this.dockerClient
-            //.debug()
             .activeSsl('key.pem', 'cert.pem', 'ca.pem', engineConf.sslRoot);
+
     }
 
     /*
     ********************** LOAD
      */
+    public static async load(): Promise<boolean> {
+        let logSrv = AppContext.instance.logService.getLogger('Docker-engine');
+        logSrv.log('Chargement du coreEngine...');
 
-    public static async loadEngine(confPath: string): Promise<CoreEngine> {
-        let engineConf = await FileUtils.loadConf<EngineConf>(confPath);
-        return new CoreEngine(engineConf);
+        let appContext: AppContext = AppContext.instance;
+        // Initialisation du context
+        appContext.dockerContext = new DockerContext();
+
+        // Chargement de la conf
+        try {
+            logSrv.log('Chargement de la conf...');
+            let engineConf = await FileUtils.loadConf<EngineConf>(appContext.appConf.confDocker);
+            appContext.dockerContext.coreEngine = new CoreEngine(engineConf);
+        } catch (e) {
+            logSrv.error('Erreur au chargement de la conf', e);
+            return false;
+        }
+
+        return true;
     }
 
-    public async loadImgConf(imgId) : Promise<ImageConf> {
-        let rootImgDir = `${this.engineConf.dockerImgsRoot}/${imgId}`;
+    public async loadImgConf(imgId): Promise<ImageConf> {
+
+        let imgConf = `${this.engineConf.dockerImgsRoot}/${imgId}/conf.json`;
+        this.logSrv.info(`Chargement de la configuration de l'image : ${imgConf}`);
+
         // Recuperation de la conf
-        return await FileUtils.loadConf<ImageConf>(`${rootImgDir}/conf.json`);
+        try {
+            return await FileUtils.loadConf<ImageConf>(imgConf);
+        } catch (e) {
+            this.logSrv.error(`Erreur au chargement de la configuration de l'image : ${imgConf}`, e);
+            return null;
+        }
     }
 
     public async loadImgBean(imageName: string): Promise<ImageBean> {
+        this.logSrv.debug(`Récuperation des infos pour l'image : ${imageName}`);
         let rootImgDir = `${this.engineConf.dockerImgsRoot}/${imageName}`;
 
-        try {
-            // Recuperation de la conf
-            let conf = await this.loadImgConf(imageName);
+        // Recuperation de la conf
+        let conf = await this.loadImgConf(imageName);
+        if (conf == null) return null;
 
-            let imgBean: ImageBean = new ImageBean();
-            imgBean.name = imageName;
-            imgBean.dirPath = rootImgDir;
-            imgBean.conf = conf;
+        let imgBean: ImageBean = new ImageBean();
+        imgBean.name = imageName;
+        imgBean.dirPath = rootImgDir;
+        imgBean.conf = conf;
 
-            return imgBean;
+        return imgBean;
 
-        } catch (e) {
-            // Pas d'acces sur cette image
-            console.log(e);
-            throw e;
-        }
     }
 
     /*
@@ -74,12 +97,12 @@ export class CoreEngine {
 
     public async buildFromDir(img: ImageBean): Promise<void> {
 
-        let imgDir = `${this.engineConf.dockerImgsRoot}/${img.name}/image`;
+        this.logSrv.info(`Création de l'image : ${img.fullName}`);
+        let imgDir = `${img.dirPath}/image`;
 
+        this.logSrv.debug(`Préparation de l'archive tar`);
         let pack = new Pack({cwd: imgDir});
-
         let filesPromise: string[] = await Fs.promises.readdir(imgDir);
-
         filesPromise.forEach((f) => {
             pack.write(f);
         });
@@ -88,19 +111,28 @@ export class CoreEngine {
         let val = await StreamUtils.readToString(pack);
 
         // build de l'image
+        this.logSrv.debug(`Appel du service de création docker`);
         return this.dockerClient.build(img.fullName, val);
     }
 
-
-
     public async getOrBuildImg(idImage: string): Promise<ImageBean> {
 
+        this.logSrv.info(`Recherche de l'image : ${idImage}`);
         let imgBean: ImageBean = await this.loadImgBean(idImage);
-        let imageId : string = await this.dockerClient.getImage(imgBean.fullName);
-        if (!imageId) {
-            await this.buildFromDir(imgBean);
+        if (!imgBean) return null;
+
+        this.logSrv.info(`Récuperation de l'image docker ${imgBean.fullName}`);
+        try {
+            let imageId: string = await this.dockerClient.getImage(imgBean.fullName);
+            if (!imageId) {
+                this.logSrv.info(`L'image ${imgBean.fullName} n'existe pas, elle sera créée`);
+                await this.buildFromDir(imgBean);
+            }
+            return imgBean;
+        } catch (e) {
+            this.logSrv.error(`L'image ${imgBean.fullName} n'a pas pu être récupérée/créée auprès de docker`, e);
+            return null;
         }
-        return imgBean;
 
     }
 
@@ -127,6 +159,7 @@ export class CoreEngine {
             ['./writeFile.sh', file.code, file.filePath]);
         await this.dockerClient.startExec(idExec);
     }
+
     /**
      * Creer une execution permettant d'ecrire des fichier dans le container docker
      * @param {string} idContainer
