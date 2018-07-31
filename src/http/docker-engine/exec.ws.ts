@@ -10,7 +10,7 @@ export class ExecWs extends WsServer {
 
     private coreEngineLoaded: boolean;
     private coreEngine: CoreEngine;
-    private logger: Logger;
+    private logger: Console;
 
     public constructor() {
         super();

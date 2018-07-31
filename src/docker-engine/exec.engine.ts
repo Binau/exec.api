@@ -44,6 +44,7 @@ export class ExecEngine {
 
         // Creation + demarrage container
         this.idContainer = await this.coreEngine.startContainer(imgBean);
+        if (this.idContainer == null) return false;
 
         // Ecriture de chacun des fichiers
         this.coreEngine.writeFiles(this.idContainer, param.files);

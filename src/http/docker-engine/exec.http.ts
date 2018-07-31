@@ -8,11 +8,11 @@ import {Level, Logger} from "../../common/log.service";
 export class ExecHttp {
 
     private coreEngine: CoreEngine;
-    private loggerSrv: Logger;
+    private logger: Console;
 
     public constructor() {
         this.coreEngine = AppContext.instance.dockerContext.coreEngine;
-        this.loggerSrv = AppContext.instance.logService.getLogger('Http', Level.INFO);
+        this.logger = AppContext.instance.logService.getLogger('Http', Level.INFO);
     }
 
     private logHeader(context: HttpContext): string {
@@ -22,7 +22,7 @@ export class ExecHttp {
     @GET('')
     public async getExecs(context: HttpContext): Promise<ExecInfos[]> {
 
-        this.loggerSrv.error(`${this.logHeader(context)} [501] Non implémentée`);
+        this.logger.error(`${this.logHeader(context)} [501] Non implémentée`);
         context.koaContext.status = 501;
         return;
     }
@@ -30,12 +30,12 @@ export class ExecHttp {
     @GET('/:id')
     public async getExec(context: HttpContext): Promise<ExecInfos> {
 
-        this.loggerSrv.debug(`${this.logHeader(context)} Traitement`);
+        this.logger.debug(`${this.logHeader(context)} Traitement`);
 
         let id = context.params.id;
         let conf = await this.coreEngine.loadImgConf(id);
 
-        this.loggerSrv.debug(`${this.logHeader(context)} Conf : `, conf);
+        this.logger.debug(`${this.logHeader(context)} Conf : `, conf);
 
         if (!!conf) return {
             langage: conf.langage,
@@ -44,7 +44,7 @@ export class ExecHttp {
             bootFileTemplate: conf.bootFileTemplate
         };
 
-        this.loggerSrv.warn(`${this.logHeader(context)} Infos introuvables`);
+        this.logger.warn(`${this.logHeader(context)} Infos introuvables`);
         context.koaContext.status = 404;
         return;
     }

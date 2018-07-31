@@ -20,12 +20,14 @@ export class CoreEngine {
     }
 
     private appContext: AppContext;
-    private logSrv: Logger;
+    private logSrv: Console;
+    private dockerClientLogger: Console;
     private _availablesImgsId: string[];
 
     private constructor() {
         this.appContext = AppContext.instance;
         this.logSrv = AppContext.instance.logService.getLogger('Docker-CoreEngine', Level.DEBUG);
+        this.dockerClientLogger = AppContext.instance.logService.getLogger('Docker-Client', Level.DEBUG);
     }
 
     private async init(): Promise<boolean> {
@@ -37,7 +39,8 @@ export class CoreEngine {
 
             // Creation d'un client vers le docker machine local
             this.logSrv.debug(`Chargement du client docker pour ${this.engineConf.host}:${this.engineConf.port}`);
-            this.dockerClient = new DockerClient(this.engineConf.host, this.engineConf.port);
+            this.dockerClient = new DockerClient(this.engineConf.host, this.engineConf.port,
+                this.dockerClientLogger);
 
             // Configuration des certificats
             this.logSrv.debug(`Chargement des certificats docker depuis ${this.engineConf.sslRoot}`);
@@ -123,7 +126,7 @@ export class CoreEngine {
         let val = await StreamUtils.readToString(pack);
 
         // build de l'image
-        this.logSrv.debug(`Appel du service de création docker`);
+        this.logSrv.debug(`Appel du service de création de l'image docker`);
         return this.dockerClient.build(img.fullName, val);
     }
 
@@ -153,9 +156,15 @@ export class CoreEngine {
      */
 
     public async startContainer(imgBean: ImageBean): Promise<string> {
-        let idContainer = await this.dockerClient.createContainers(imgBean.fullName);
-        await this.dockerClient.startContainer(idContainer);
-        return idContainer;
+        this.logSrv.info(`Création et démarrate d'un contaier pour l'image ${imgBean.fullName}`);
+        try {
+            let idContainer = await this.dockerClient.createContainers(imgBean.fullName);
+            await this.dockerClient.startContainer(idContainer);
+            return idContainer;
+        } catch(e) {
+            this.logSrv.error(`Erreur lors de la tentative de démarrage/création du container pour l'image ${imgBean.fullName}`);
+            return null;
+        }
     }
 
 

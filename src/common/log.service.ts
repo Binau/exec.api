@@ -1,13 +1,14 @@
 import * as Colors from 'colors';
 import {Color} from "colors";
 
-export class Logger {
+export class Logger extends console.Console {
 
     public level: Level = Level.DEBUG;
     public title?: string;
     public titleColor?: Color;
 
     constructor() {
+        super(process.stdout, process.stderr);
     }
 
     private buildLogMessage(level: string, message?: string): string {
@@ -36,6 +37,10 @@ export class Logger {
         console.debug(this.buildLogMessage(Colors.gray('DEBUG'), message), ...optionalParams);
     }
 
+    trace(message?: any, ...optionalParams: any[]): void {
+        this.debug(...arguments);
+    }
+
     info(message?: string, ...optionalParams: any[]): void {
         if (this.level > Level.INFO) return;
         if (!message) {
@@ -47,7 +52,9 @@ export class Logger {
         console.info(this.buildLogMessage('INFO', message), ...optionalParams);
     }
 
-    log = this.info.bind(this);
+    log(message?: string, ...optionalParams: any[]): void {
+        this.info(...arguments);
+    }
 
     warn(message?: string, ...optionalParams: any[]): void {
         if (this.level > Level.WARN) return;
@@ -69,7 +76,10 @@ export class Logger {
         }
     }
 
-    exception = this.error.bind(this);
+    exception(message?: string, ...optionalParams: any[]): void {
+        this.error(...arguments);
+    }
+
 
     //
 
@@ -103,7 +113,7 @@ export class LogService {
     constructor() {
     }
 
-    public getLogger(title?: string, level: Level = Level.DEBUG): Logger {
+    public getLogger(title?: string, level: Level = Level.DEBUG): Console {
         let logger = new Logger();
 
         if (!!title) {
