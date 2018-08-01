@@ -42,7 +42,7 @@ export class UtilisateurHttp {
     }
 
     @POST('/utilisateur/login')
-    public async login(context: HttpContext){
+    public async login(context: HttpContext): Promise<Response>{
         
         let user : IUser= await Utilisateur.findOne({ email: context.body.email })
 
@@ -50,22 +50,22 @@ export class UtilisateurHttp {
         if (!user){
             context.koaContext.response.body = 'Email ou mot de passe invalide';
             context.koaContext.response.status=401;
-            return;
+            return context.koaContext.response;
         }
 
         if(user.motDePasse != context.body.motDePasse){
             context.koaContext.response.body = 'Email ou mot de passe invalide';
             context.koaContext.response.status=401;
-            return;
+            return context.koaContext.response;
         }
 
         let payload = { sub: user.login }
         let token = jwt.encode(payload, '123');
 
-        console.log(token);
-
-        context.koaContext.response.body = token;
         context.koaContext.response.status=200;
+        context.koaContext.response.body=token;
+        
+        return context.koaContext.response;
 
     }
 
