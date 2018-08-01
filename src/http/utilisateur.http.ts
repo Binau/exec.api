@@ -1,7 +1,9 @@
 import {GET, HttpContext, POST} from "http-typescript";
 import * as mongoose from 'mongoose';
+import * as jwt from 'jwt-simple';
 
 import { Utilisateur } from "../bean/utilisateur/utilisateurBDD";
+import {IUser}  from "../bean/utilisateur/utilisateur";
 
 
 mongoose.Promise = Promise;
@@ -39,6 +41,32 @@ export class UtilisateurHttp {
         });
     }
 
+    @POST('/utilisateur/login')
+    public async login(context: HttpContext){
+        
+        let user : IUser= await Utilisateur.findOne({ email: context.body.email })
 
+        console.log(user);
+        if (!user){
+            context.koaContext.response.body = 'Email ou mot de passe invalide';
+            context.koaContext.response.status=401;
+            return;
+        }
+
+        if(user.motDePasse != context.body.motDePasse){
+            context.koaContext.response.body = 'Email ou mot de passe invalide';
+            context.koaContext.response.status=401;
+            return;
+        }
+
+        let payload = { sub: user.login }
+        let token = jwt.encode(payload, '123');
+
+        console.log(token);
+
+        context.koaContext.response.body = token;
+        context.koaContext.response.status=200;
+
+    }
 
 }

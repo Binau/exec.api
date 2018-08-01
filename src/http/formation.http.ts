@@ -1,5 +1,4 @@
 import {GET, HttpContext} from "http-typescript";
-import * as Fs from "fs";
 import { FormationBean } from "../bean/formation.bean";
 
 export class FormationHttp {
