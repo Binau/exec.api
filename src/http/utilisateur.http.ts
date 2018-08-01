@@ -1,6 +1,7 @@
 import {GET, HttpContext, POST} from "http-typescript";
 import * as mongoose from 'mongoose';
 import * as jwt from 'jwt-simple';
+import  * as bcrypt from "bcrypt-nodejs";
 
 import { Utilisateur } from "../bean/utilisateur/utilisateurBDD";
 import {IUser}  from "../bean/utilisateur/utilisateur";
@@ -39,35 +40,51 @@ export class UtilisateurHttp {
                     resolve();
                 }
             })
-        });
+        }).catch(err => console.log(err));;
     }
 
     @POST('/utilisateur/login')
-    public async login(context: HttpContext): Promise<Response>{
+    public async login(context: HttpContext){
         
         let user : IUser= await Utilisateur.findOne({ email: context.body.email })
+        return await new Promise((resolve, reject) => {
+            console.log(`utilisateur : ${JSON.stringify(user)}`);
+            if (!user){
+                context.koaContext.response.message = 'Email ou mot de passe invalide';
+                context.koaContext.response.status=401;
+                reject(new Error('Email ou mot de passe invalide'))
+            }
 
-        console.log(user);
-        if (!user){
-            context.koaContext.response.message = 'Email ou mot de passe invalide';
-            context.koaContext.response.status=401;
-            return context.koaContext.response;
-        }
-
-        if(user.motDePasse != context.body.motDePasse){
-            context.koaContext.response.message = 'Email ou mot de passe invalide';
-            context.koaContext.response.status=401;
-            return context.koaContext.response;
-        }
-
-        let payload = { sub: user.login }
-        let token = jwt.encode(payload, '123');
-
-        context.koaContext.response.status=200;
-        context.koaContext.response.body=token;
         
-        return context.koaContext.response;
+            bcrypt.compare(context.body.motDePasse, user.motDePasse, (err, isMatch) => {
+                if (!isMatch){
+                    context.koaContext.response.message = 'Email ou mot de passe invalide';
+                    context.koaContext.response.status=401;
+                    reject(new Error('Email ou mot de passe invalide'));
+                }else{
+                    let payload = { sub: user.login }
+                    // TODO : A parametrer
+                    let token = jwt.encode(payload, '123');
+            
+                    // TODO : KO pour le moment (pas de token) ???
+                    context.koaContext.response.status=200;
+                    context.koaContext.response.body=token;
+                    resolve("OK");
+                }
+            });
+        }).catch(err => console.log(err));
 
+
+
+        
     }
+
+    public resolved(result) {
+        console.log('Resolved');
+      }
+      
+      public rejected(result) {
+        console.log(result);
+      }
 
 }
