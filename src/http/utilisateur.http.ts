@@ -6,6 +6,7 @@ import { Utilisateur } from "../bean/utilisateur/utilisateurBDD";
 import {IUser}  from "../bean/utilisateur/utilisateur";
 
 
+// Mongoose default promise library is deprecated --> on utilise donc celle de node !
 mongoose.Promise = Promise;
 mongoose.connect(
     // TODO parametrage
@@ -48,13 +49,13 @@ export class UtilisateurHttp {
 
         console.log(user);
         if (!user){
-            context.koaContext.response.body = 'Email ou mot de passe invalide';
+            context.koaContext.response.message = 'Email ou mot de passe invalide';
             context.koaContext.response.status=401;
             return context.koaContext.response;
         }
 
         if(user.motDePasse != context.body.motDePasse){
-            context.koaContext.response.body = 'Email ou mot de passe invalide';
+            context.koaContext.response.message = 'Email ou mot de passe invalide';
             context.koaContext.response.status=401;
             return context.koaContext.response;
         }
