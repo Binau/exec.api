@@ -11,7 +11,7 @@ import {IUser}  from "../bean/utilisateur/utilisateur";
 mongoose.Promise = Promise;
 mongoose.connect(
     // TODO parametrage
-    'mongodb://test:test123@ds245661.mlab.com:45661/exec',
+    'mongodb://test2:test222@ds245661.mlab.com:45661/exec',
     {keepAlive: 1, useNewUrlParser: true},
     (err) => {
         if (!err) {
@@ -54,8 +54,7 @@ export class UtilisateurHttp {
                 context.koaContext.response.status=401;
                 reject(new Error('Email ou mot de passe invalide'))
             }
-
-        
+            
             bcrypt.compare(context.body.motDePasse, user.motDePasse, (err, isMatch) => {
                 if (!isMatch){
                     context.koaContext.response.message = 'Email ou mot de passe invalide';
@@ -66,7 +65,7 @@ export class UtilisateurHttp {
                     // TODO : A parametrer
                     let token = jwt.encode(payload, '123');
                     context.koaContext.response.status=200;
-                    resolve(token);
+                    resolve({token});
                 }
             });
         }).catch(err => console.log(err));
