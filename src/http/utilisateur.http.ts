@@ -65,26 +65,11 @@ export class UtilisateurHttp {
                     let payload = { sub: user.login }
                     // TODO : A parametrer
                     let token = jwt.encode(payload, '123');
-            
-                    // TODO : KO pour le moment (pas de token) ???
                     context.koaContext.response.status=200;
-                    context.koaContext.response.body=token;
-                    resolve("OK");
+                    resolve(token);
                 }
             });
         }).catch(err => console.log(err));
 
-
-
-        
     }
-
-    public resolved(result) {
-        console.log('Resolved');
-      }
-      
-      public rejected(result) {
-        console.log(result);
-      }
-
 }
