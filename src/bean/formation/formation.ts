@@ -11,6 +11,7 @@ export interface IFormation {
   avancement : string;
   image : string;
   idCycleFormation : string;
+  niveauFormation : string;
 }
 
 

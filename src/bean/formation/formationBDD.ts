@@ -23,7 +23,8 @@ export var formationSchema: Schema = new Schema({
   },
   avancement : String,
   image : String,
-  idCycleFormation : String
+  idCycleFormation : String,
+  niveauFormation : String
 });
 
 formationSchema.pre("save", function(next) {
