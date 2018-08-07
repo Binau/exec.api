@@ -5,5 +5,3 @@ export interface ICycleFormation {
   avancement : string;
   image : string;
 }
-
-
