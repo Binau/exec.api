@@ -7,6 +7,7 @@ import { Utilisateur } from "../bean/utilisateur/utilisateurBDD";
 import {IUser}  from "../bean/utilisateur/utilisateur";
 
 
+// TODO : A déplacer
 // Mongoose default promise library is deprecated --> on utilise donc celle de node !
 mongoose.Promise = Promise;
 mongoose.connect(
@@ -21,6 +22,8 @@ mongoose.connect(
     }).catch((error) => {
     console.log('Erreur lors de la connection à la BDD', error)
 });
+// TODO : A commenter
+mongoose.set('debug', true);
 
 export class UtilisateurHttp {
 
@@ -61,7 +64,7 @@ export class UtilisateurHttp {
                     context.koaContext.response.status=401;
                     reject(new Error('Email ou mot de passe invalide'));
                 }else{
-                    let payload = { sub: user.login }
+                    let payload = { sub: user.login } 
                     // TODO : A parametrer
                     let token = jwt.encode(payload, '123');
                     context.koaContext.response.status=200;
