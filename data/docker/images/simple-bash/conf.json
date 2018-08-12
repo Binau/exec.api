@@ -1,0 +1,7 @@
+{
+  "version":"0.0.1",
+  "description" : "Execution du bash",
+  "langage" : "shell",
+  "bootFileName":"src/start.sh",
+  "bootFileTemplate": "#!/bin/bash\necho 'Hello Bash'"
+}

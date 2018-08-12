@@ -17,8 +17,9 @@
     "test.ts": "npm run build.ts && mocha tmp/test/01*.js"
   },
   "dependencies": {
+    "colors": "^1.3.1",
     "deep-equal": "^1.0.1",
-    "http-typescript": "^1.3.0",
+    "http-typescript": "^1.3.1",
     "mongoose": "^5.2.4",
     "tar": "^4.4.4"
   }

@@ -1,6 +1,7 @@
 {
   "version":"0.2.1",
-  "bootFile":"src/index.js",
-  "description" : "Exécution du javascript sur un node v10.4 : https://nodejs.org/docs/latest-v10.x/api/index.html",
-  "langage" : "javascript"
+  "description" : "Execution du javascript sur un node v10.4 : https://nodejs.org/docs/latest-v10.x/api/index.html",
+  "langage" : "javascript",
+  "bootFileName":"src/index.js",
+  "bootFileTemplate": "console.log('Hello Js');"
 }
