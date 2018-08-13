@@ -1,7 +1,7 @@
 import {GET, HttpContext, POST} from "http-typescript";
 import * as mongoose from 'mongoose';
 import * as jwt from 'jwt-simple';
-import  * as bcrypt from "bcrypt-nodejs";
+import * as bcrypt from "bcrypt";
 
 import { Utilisateur } from "../bean/utilisateur/utilisateur.bdd";
 import {IUser}  from "../bean/utilisateur/utilisateur";
@@ -22,8 +22,9 @@ mongoose.connect(
     }).catch((error) => {
     console.log('Erreur lors de la connection à la BDD', error)
 });
-// TODO : A commenter
-mongoose.set('debug', true);
+
+// Pour passer en mode debug
+// mongoose.set('debug', true);
 
 export class UtilisateurHttp {
 
