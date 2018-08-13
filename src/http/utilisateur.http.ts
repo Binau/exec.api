@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 import * as jwt from 'jwt-simple';
 import  * as bcrypt from "bcrypt-nodejs";
 
-import { Utilisateur } from "../bean/utilisateur/utilisateurBDD";
+import { Utilisateur } from "../bean/utilisateur/utilisateur.bdd";
 import {IUser}  from "../bean/utilisateur/utilisateur";
 
 

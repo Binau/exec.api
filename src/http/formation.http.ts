@@ -1,10 +1,10 @@
 import {GET, HttpContext} from "http-typescript";
 
-import { Formation } from "../bean/formation/formationBDD";
+import { Formation } from "../bean/formation/formation.bdd";
 import { IFormation } from "../bean/formation/formation";
 
-import { CycleFormation } from "../bean/cycle-formation/cycleFormationBDD";
-import { ICycleFormation } from "../bean/cycle-formation/cycleFormation";
+import { CycleFormation } from "../bean/cycle-formation/cycle.formation.bdd";
+import { ICycleFormation } from "../bean/cycle-formation/cycle.formation";
 
 import * as jwt from 'jwt-simple';
 

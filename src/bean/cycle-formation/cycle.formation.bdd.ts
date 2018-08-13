@@ -1,5 +1,5 @@
 import { Document, Schema, Model, model} from "mongoose";
-import {ICycleFormation}  from "./cycleFormation";
+import {ICycleFormation}  from "./cycle.formation";
 
 export interface ICycleFormationModel extends ICycleFormation, Document {
 
