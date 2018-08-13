@@ -1,6 +1,6 @@
 import {GET, HttpContext, POST} from "http-typescript";
 import * as mongoose from 'mongoose';
-import * as jwt from 'jwt-simple';
+import * as jwt from 'jsonwebtoken';
 import * as bcrypt from "bcrypt";
 
 import { Utilisateur } from "../bean/utilisateur/utilisateur.bdd";
@@ -67,7 +67,8 @@ export class UtilisateurHttp {
                 }else{
                     let payload = { sub: user.login } 
                     // TODO : A parametrer
-                    let token = jwt.encode(payload, '123');
+                    let token = jwt.sign(payload, '123', { expiresIn: '1h' });
+
                     context.koaContext.response.status=200;
                     resolve({token});
                 }

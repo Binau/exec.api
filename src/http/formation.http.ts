@@ -6,7 +6,7 @@ import { IFormation } from "../bean/formation/formation";
 import { CycleFormation } from "../bean/cycle-formation/cycle.formation.bdd";
 import { ICycleFormation } from "../bean/cycle-formation/cycle.formation";
 
-import * as jwt from 'jwt-simple';
+import * as jwt from 'jsonwebtoken';
 
 
 
@@ -25,7 +25,7 @@ export class FormationHttp {
             console.log(`token = ${token}`)
 
             // TODO : changer le 123 pour une valeur paramétrée
-            let payload = jwt.decode(token, '123')
+            let payload = jwt.verify(token, '123')
 
             if (!payload){
                 // TODO : envoyer une erreur
