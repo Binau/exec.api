@@ -15,8 +15,6 @@ import {IndexConf} from "./index.conf";
 
 class App {
 
-
-
     private static CONF_FILE_PATH = 'data/app.conf.json';
     private appContext: AppContext = AppContext.instance;
 
@@ -70,10 +68,11 @@ class App {
     }
 }
 
+// Lancement de l'application
 try {
     new App().run();
 }
 catch (e) {
+    // Log si l'erreur n'est pas gérée
     console.log(e);
 }
-

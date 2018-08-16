@@ -1,8 +1,8 @@
 import {GET, HttpContext} from "http-typescript";
-import {ExecInfos} from "../../docker-engine/api/exec.http.api";
 import {CoreEngine} from "../../docker-engine/core.engine";
 import {AppContext} from "../../common/app.context";
 import {Level, Logger} from "../../common/log.service";
+import {ExecInfos} from "../../docker-engine/api/exec.api";
 
 
 export class ExecHttp {
@@ -40,8 +40,10 @@ export class ExecHttp {
         if (!!conf) return {
             langage: conf.langage,
             description: conf.description,
-            bootFileName: conf.bootFileName,
-            bootFileTemplate: conf.bootFileTemplate
+            bootFileTemplate: {
+                code: conf.bootFileTemplate,
+                filePath: conf.bootFileName
+            }
         };
 
         this.logger.warn(`${this.logHeader(context)} Infos introuvables`);

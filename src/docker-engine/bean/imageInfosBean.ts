@@ -1,6 +1,6 @@
 import {ImageConf} from "../conf/image.conf";
 
-export class ImageBean {
+export class ImageInfosBean {
 
     public dirPath: string;
     public name: string;

@@ -219,7 +219,6 @@ export class DockerClient {
 
                 let logs: any = await StreamUtils.readToString(resp);
                 if (resp.statusCode == 204) {
-                    this.logDebug(`- Resultat : `, logs);
                     res();
                 } else {
                     this.logError(`(ERR) /containers/${idContainer}/stop`);
@@ -254,7 +253,6 @@ export class DockerClient {
 
                 let logs: any = await StreamUtils.readToString(resp);
                 if (resp.statusCode == 204) {
-                    this.logDebug(`- Resultat : `, logs);
                     res();
                 } else {
                     this.logError(`(ERR) /containers/${idContainer}`);

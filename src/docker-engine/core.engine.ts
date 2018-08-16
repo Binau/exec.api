@@ -1,14 +1,14 @@
 import {DockerClient} from "./docker.client";
 import {EngineConf} from "./conf/engine.conf";
-import {ImageBean} from "./bean/image.bean";
+import {ImageInfosBean} from "./bean/imageInfosBean";
 import {FileUtils} from "../tool/file.utils";
 import {ImageConf} from "./conf/image.conf";
 import * as Fs from "fs";
 import {Pack} from 'tar';
 import {StreamUtils} from "../tool/stream.utils";
-import {FileToInject} from "./api/exec.ws.api";
+import {FileToInject} from "./api/exec.api";
 import {AppContext} from "../common/app.context";
-import {Level, Logger} from "../common/log.service";
+import {Level} from "../common/log.service";
 
 export class CoreEngine {
 
@@ -27,14 +27,14 @@ export class CoreEngine {
     private constructor() {
         this.appContext = AppContext.instance;
         this.logSrv = AppContext.instance.logService.getLogger('Docker-CoreEngine', Level.DEBUG);
-        this.dockerClientLogger = AppContext.instance.logService.getLogger('Docker-Client', Level.DEBUG);
+        this.dockerClientLogger = AppContext.instance.logService.getLogger('Docker-Client', Level.INFO);
     }
 
     private async init(): Promise<boolean> {
 
         // Chargement de la conf
         try {
-            this.logSrv.log('Chargement de la conf...');
+            this.logSrv.log(`Chargement de la conf...`);
             this.engineConf = await FileUtils.loadConf<EngineConf>(this.appContext.appConf.confDocker);
 
             // Creation d'un client vers le docker machine local
@@ -47,7 +47,7 @@ export class CoreEngine {
             this.dockerClient
                 .activeSsl('key.pem', 'cert.pem', 'ca.pem', this.engineConf.sslRoot);
 
-            this.logSrv.log('Chargement des images présentent dans le projet');
+            this.logSrv.log('Chargement de la liste des images présentes dans le projet');
             this._availablesImgsId = await Fs.promises.readdir(this.engineConf.dockerImgsRoot);
 
         } catch (e) {
@@ -73,6 +73,13 @@ export class CoreEngine {
 
     public async loadImgConf(imgId): Promise<ImageConf> {
 
+        // Pour eviter l'injection, test que l'id fait partie des images possibles
+        if(!this.availablesImgsId.includes(imgId)) {
+            this.logSrv.warn(`Configuration inexistante pour l'image : ${imgId}`);
+            return null;
+        }
+
+        //
         let imgConf = `${this.engineConf.dockerImgsRoot}/${imgId}/conf.json`;
         this.logSrv.info(`Chargement de la configuration de l'image : ${imgConf}`);
 
@@ -85,7 +92,7 @@ export class CoreEngine {
         }
     }
 
-    public async loadImgBean(imageName: string): Promise<ImageBean> {
+    public async loadImgBean(imageName: string): Promise<ImageInfosBean> {
         this.logSrv.debug(`Récuperation des infos pour l'image : ${imageName}`);
         let rootImgDir = `${this.engineConf.dockerImgsRoot}/${imageName}`;
 
@@ -93,13 +100,12 @@ export class CoreEngine {
         let conf = await this.loadImgConf(imageName);
         if (conf == null) return null;
 
-        let imgBean: ImageBean = new ImageBean();
+        let imgBean: ImageInfosBean = new ImageInfosBean();
         imgBean.name = imageName;
         imgBean.dirPath = rootImgDir;
         imgBean.conf = conf;
 
         return imgBean;
-
     }
 
     /*
@@ -110,7 +116,7 @@ export class CoreEngine {
         return this.dockerClient.build(imgName, Fs.readFileSync(tarPath));
     }
 
-    public async buildFromDir(img: ImageBean): Promise<void> {
+    public async buildFromDir(img: ImageInfosBean): Promise<void> {
 
         this.logSrv.info(`Création de l'image : ${img.fullName}`);
         let imgDir = `${img.dirPath}/image`;
@@ -130,10 +136,10 @@ export class CoreEngine {
         return this.dockerClient.build(img.fullName, val);
     }
 
-    public async getOrBuildImg(idImage: string): Promise<ImageBean> {
+    public async getOrBuildImg(idImage: string): Promise<ImageInfosBean> {
 
         this.logSrv.info(`Recherche de l'image : ${idImage}`);
-        let imgBean: ImageBean = await this.loadImgBean(idImage);
+        let imgBean: ImageInfosBean = await this.loadImgBean(idImage);
         if (!imgBean) return null;
 
         this.logSrv.info(`Récuperation de l'image docker ${imgBean.fullName}`);
@@ -155,7 +161,7 @@ export class CoreEngine {
     ***************************** CONTAINERS
      */
 
-    public async startContainer(imgBean: ImageBean): Promise<string> {
+    public async startContainer(imgBean: ImageInfosBean): Promise<string> {
         this.logSrv.info(`Création et démarrate d'un contaier pour l'image ${imgBean.fullName}`);
         try {
             let idContainer = await this.dockerClient.createContainers(imgBean.fullName);
