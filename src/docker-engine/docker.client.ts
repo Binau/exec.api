@@ -7,7 +7,6 @@ import {IncomingMessage} from "http";
 
 export class DockerClient {
 
-    private _debug: boolean = false;
     public ssl: {
         key?: Buffer,
         cert?: Buffer,
@@ -16,18 +15,10 @@ export class DockerClient {
 
     constructor(
         private hostname: string,
-        private port: number
+        private port: number,
+        private logger: Console = console
     ) {
 
-    }
-
-    /**
-     * Active les inforamtions de debug
-     * @returns {this}
-     */
-    public debug(): this {
-        this._debug = true;
-        return this;
     }
 
     /**
@@ -46,7 +37,6 @@ export class DockerClient {
             caFile = `${rootDir}/${caFile}`;
         }
 
-
         this.ssl.key = Fs.readFileSync(keyFile);
         this.ssl.cert = Fs.readFileSync(certFile);
         this.ssl.ca = Fs.readFileSync(caFile);
@@ -54,11 +44,11 @@ export class DockerClient {
         return this;
     }
 
-
     /* BUILD IMAGE */
     public async build(imgName: string, tarBuffer: string | Buffer): Promise<void> {
 
-        this.logDebug(`[DOCKER CLIENT] (POST) /build?t=${imgName} ...`);
+        this.logger.info(`Création de l'image ${imgName}...`);
+        this.logDebug(`(POST) /build?t=${imgName} DEBUT`);
         return new Promise<void>((res, rej) => {
             let opts = this.commonOpts();
 
@@ -68,18 +58,18 @@ export class DockerClient {
 
             const req = Https.request(opts, (resp) => {
 
-                resp.on('data', d => this.logDebug(d));
+                resp.on('data', d => this.logger.debug( BufferUtils.bufferOrStrToStr(d)));
                 resp.on('end', (d) => {
-                    this.logDebug(`[DOCKER CLIENT] (FIN) /build?t=${imgName}`);
+                    this.logger.info(`Image ${imgName} créée...`);
+                    this.logDebug(`(POST) /build?t=${imgName} FIN`);
                     this.logDebugResp(resp);
-                    this.logDebug(` `);
                     res();
                 });
             });
 
             req.on('error', (e) => {
-                this.logError(`[DOCKER CLIENT] (ERR) /build?t=${imgName}`, e);
-                this.logErrorStatus(opts);
+                this.logger.error(`Erreur à la création de l'image ${imgName}`, e);
+                this.logErrorInfos(opts);
                 rej(e);
             });
             req.write(tarBuffer);
@@ -93,7 +83,7 @@ export class DockerClient {
 
         // /images/{name}/json
 
-        this.logDebug(`[DOCKER CLIENT] (GET) /images/${imgName}/json ...`);
+        this.logDebug(`(GET) /images/${imgName}/json ...`);
         return new Promise<string>((res, rej) => {
             let opts = this.commonOpts();
 
@@ -102,31 +92,35 @@ export class DockerClient {
 
             const req = Https.request(opts, async (resp) => {
 
-                this.logDebug(`[DOCKER CLIENT] (FIN) /images/${imgName}/json`);
+                this.logDebug(`(FIN) /images/${imgName}/json`);
                 this.logDebugResp(resp);
 
-                if (resp.statusCode == 200 ) {
+                if (resp.statusCode == 200) {
                     let result: any = await StreamUtils.readToObj<any>(resp);
-                    this.logDebug(`[DOCKER CLIENT] - Resultat : `, result);
+                    this.logDebug(`- Resultat : `, result);
                     res(result.Id);
-                } else if (resp.statusCode == 404 ) {
-                    this.logDebug(`[DOCKER CLIENT] - Resultat : Introuvable`);
+                } else if (resp.statusCode == 404) {
+                    this.logDebug(`- Resultat : Introuvable`);
                     res(null);
                 } else {
                     let result: String = await StreamUtils.readToString(resp);
-                    this.logError(`[DOCKER CLIENT] (ERR) /images/${imgName}/json`);
-                    this.logErrorStatus(opts, resp, result);
+                    this.logError(`(ERR) /images/${imgName}/json`);
+                    this.logErrorInfos(opts, resp, result);
                     rej();
                 }
 
             });
 
             req.on('error', (e) => {
-                this.logError(`[DOCKER CLIENT] (ERR) /images/${imgName}/json`, e);
-                this.logErrorStatus(opts);
+                this.logError(`(ERR) /images/${imgName}/json`, e);
+                this.logErrorInfos(opts);
                 rej(e);
             });
+            /*req.once('socket', s => s.setTimeout(DockerClient.REQ_TIMEOUT, () => {
+                s.destroy();
+            }));*/
             req.end();
+
 
         });
     }
@@ -134,7 +128,7 @@ export class DockerClient {
     /* CONTAINER */
     public async createContainers(imgName: string): Promise<string> {
 
-        this.logDebug(`[DOCKER CLIENT] (POST) /containers/create ${imgName} ...`);
+        this.logDebug(`(POST) /containers/create ${imgName} ...`);
         return new Promise<string>((res, rej) => {
             let opts = this.commonOpts();
 
@@ -144,24 +138,22 @@ export class DockerClient {
 
             const req = Https.request(opts, async (resp) => {
 
-                this.logDebug(`[DOCKER CLIENT] (FIN) /containers/create`);
+                this.logDebug(`(FIN) /containers/create`);
                 this.logDebugResp(resp);
 
                 if (resp.statusCode == 201) {
                     let result: any = await StreamUtils.readToObj<any>(resp);
-                    this.logDebug(`[DOCKER CLIENT] - Resultat : `, result);
+                    this.logDebug(`- Resultat : `, result);
                     res(result.Id);
                 } else {
                     let result: String = await StreamUtils.readToString(resp);
-                    this.logError(`[DOCKER CLIENT] (ERR) /containers/create`);
-                    this.logErrorStatus(opts, resp, result);
+                    this.logErrorInfos(opts, resp, result);
                     rej();
                 }
             });
 
             req.on('error', (e) => {
-                this.logError(`[DOCKER CLIENT] (ERR) /containers/create`, e);
-                this.logErrorStatus(opts);
+                this.logError(`(ERR) /containers/create`, e);
                 rej(e);
             });
             req.write(JSON.stringify({
@@ -170,7 +162,6 @@ export class DockerClient {
                 OpenStdin: true,
                 NetworkDisabled: true,
             }));
-
             req.end();
 
         });
@@ -178,7 +169,7 @@ export class DockerClient {
 
     public async startContainer(idContainer: string): Promise<void> {
 
-        this.logDebug(`[DOCKER CLIENT] (POST) /containers/${idContainer}/start ...`);
+        this.logDebug(`(POST) /containers/${idContainer}/start ...`);
         return new Promise<void>((res, rej) => {
             let opts = this.commonOpts();
 
@@ -187,27 +178,26 @@ export class DockerClient {
             opts.headers = {'Content-type': 'application/json'};
 
             const req = Https.request(opts, async (resp) => {
-                this.logDebug(`[DOCKER CLIENT] (FIN) /containers/${idContainer}/start`);
+                this.logDebug(`(FIN) /containers/${idContainer}/start`);
                 this.logDebugResp(resp);
 
                 let logs: string = await StreamUtils.readToString(resp);
                 if (resp.statusCode == 204) {
-                    this.logDebug(`[DOCKER CLIENT] - Resultat : `, logs);
+                    this.logDebug(`- Resultat : `, logs);
                     res();
                 } else {
-                    this.logError(`[DOCKER CLIENT] (ERR) /containers/${idContainer}/start`);
-                    this.logErrorStatus(opts, resp, logs);
+                    this.logError(`(ERR) /containers/${idContainer}/start`);
+                    this.logErrorInfos(opts, resp, logs);
                     rej();
                 }
 
             });
 
             req.on('error', (e) => {
-                this.logError(`[DOCKER CLIENT] (ERR) /containers/${idContainer}/start`, e);
-                this.logErrorStatus(opts);
+                this.logError(`(ERR) /containers/${idContainer}/start`, e);
+                this.logErrorInfos(opts);
                 rej(e);
             });
-
             req.end();
 
         });
@@ -216,7 +206,7 @@ export class DockerClient {
 
     public async stopContainer(idContainer: string): Promise<void> {
 
-        this.logDebug(`[DOCKER CLIENT] (POST) /containers/${idContainer}/stop ...`);
+        this.logDebug(`(POST) /containers/${idContainer}/stop ...`);
         return new Promise<void>((res, rej) => {
             let opts = this.commonOpts();
 
@@ -224,26 +214,24 @@ export class DockerClient {
             opts.method = `POST`;
 
             const req = Https.request(opts, async (resp) => {
-                this.logDebug(`[DOCKER CLIENT] (FIN) /containers/${idContainer}/stop`);
+                this.logDebug(`(FIN) /containers/${idContainer}/stop`);
                 this.logDebugResp(resp);
 
                 let logs: any = await StreamUtils.readToString(resp);
                 if (resp.statusCode == 204) {
-                    this.logDebug(`[DOCKER CLIENT] - Resultat : `, logs);
                     res();
                 } else {
-                    this.logError(`[DOCKER CLIENT] (ERR) /containers/${idContainer}/stop`);
-                    this.logErrorStatus(opts, resp, logs);
+                    this.logError(`(ERR) /containers/${idContainer}/stop`);
+                    this.logErrorInfos(opts, resp, logs);
                     rej();
                 }
             });
 
             req.on('error', (e) => {
-                this.logError(`[DOCKER CLIENT] (ERR) /containers/${idContainer}/stop`, e);
-                this.logErrorStatus(opts);
+                this.logError(`(ERR) /containers/${idContainer}/stop`, e);
+                this.logErrorInfos(opts);
                 rej(e);
             });
-
             req.end();
 
         });
@@ -252,7 +240,7 @@ export class DockerClient {
 
     public async deleteContainer(idContainer: string): Promise<void> {
 
-        this.logDebug(`[DOCKER CLIENT] (DELETE) /containers/${idContainer} ...`);
+        this.logDebug(`(DELETE) /containers/${idContainer} ...`);
         return new Promise<void>((res, rej) => {
             let opts = this.commonOpts();
 
@@ -260,26 +248,24 @@ export class DockerClient {
             opts.method = `DELETE`;
 
             const req = Https.request(opts, async (resp) => {
-                this.logDebug(`[DOCKER CLIENT] (FIN) /containers/${idContainer}`);
+                this.logDebug(`(FIN) /containers/${idContainer}`);
                 this.logDebugResp(resp);
 
                 let logs: any = await StreamUtils.readToString(resp);
                 if (resp.statusCode == 204) {
-                    this.logDebug(`[DOCKER CLIENT] - Resultat : `, logs);
                     res();
                 } else {
-                    this.logError(`[DOCKER CLIENT] (ERR) /containers/${idContainer}`);
-                    this.logErrorStatus(opts, resp, logs);
+                    this.logError(`(ERR) /containers/${idContainer}`);
+                    this.logErrorInfos(opts, resp, logs);
                     rej();
                 }
             });
 
             req.on('error', (e) => {
-                this.logError(`[DOCKER CLIENT] (ERR) /containers/${idContainer}`, e);
-                this.logErrorStatus(opts);
+                this.logError(`(ERR) /containers/${idContainer}`, e);
+                this.logErrorInfos(opts);
                 rej(e);
             });
-
             req.end();
 
         });
@@ -290,7 +276,7 @@ export class DockerClient {
 
     public async createExec(idContainer: string, cmd: string[]): Promise<string> {
 
-        this.logDebug(`[DOCKER CLIENT] (POST) /containers/${idContainer}/exec ...`);
+        this.logDebug(`(POST) /containers/${idContainer}/exec ...`);
         return new Promise<string>((res, rej) => {
             let opts = this.commonOpts();
 
@@ -299,24 +285,24 @@ export class DockerClient {
             opts.headers = {'Content-type': 'application/json'};
 
             const req = Https.request(opts, async (resp) => {
-                this.logDebug(`[DOCKER CLIENT] (FIN) /containers/${idContainer}/exec`);
+                this.logDebug(`(FIN) /containers/${idContainer}/exec`);
                 this.logDebugResp(resp);
 
                 if (resp.statusCode == 201) {
                     let result: any = await StreamUtils.readToObj<any>(resp);
-                    this.logDebug(`[DOCKER CLIENT] - Resultat : `, result);
+                    this.logDebug(`- Resultat : `, result);
                     res(result.Id);
                 } else {
                     let result: String = await StreamUtils.readToString(resp);
-                    this.logError(`[DOCKER CLIENT] (ERR) /containers/${idContainer}/exec`);
-                    this.logErrorStatus(opts, resp, result);
+                    this.logError(`(ERR) /containers/${idContainer}/exec`);
+                    this.logErrorInfos(opts, resp, result);
                     rej();
                 }
             });
 
             req.on('error', (e) => {
-                this.logError(`[DOCKER CLIENT] (ERR) /containers/${idContainer}/exec`, e);
-                this.logErrorStatus(opts);
+                this.logError(`(ERR) /containers/${idContainer}/exec`, e);
+                this.logErrorInfos(opts);
                 rej(e);
             });
             req.write(JSON.stringify({
@@ -325,7 +311,6 @@ export class DockerClient {
                 AttachStderr: true,
                 Cmd: cmd,
             }));
-
             req.end();
 
         });
@@ -338,7 +323,7 @@ export class DockerClient {
      */
     public async startExec(idExec: string, logCb?: (log: string) => void): Promise<void> {
 
-        this.logDebug(`[DOCKER CLIENT] (POST) /exec/${idExec}/start ...`);
+        this.logDebug(`(POST) /exec/${idExec}/start ...`);
         return new Promise<void>((res, rej) => {
             let opts = this.commonOpts();
 
@@ -347,7 +332,7 @@ export class DockerClient {
             opts.headers = {'Content-type': 'application/json'};
 
             const req = Https.request(opts, (resp) => {
-                this.logDebug(`[DOCKER CLIENT] (FIN) /exec/${idExec}/start`);
+                this.logDebug(`(FIN) /exec/${idExec}/start`);
                 this.logDebugResp(resp);
                 if (resp.statusCode == 200) {
                     resp.on('data', d => {
@@ -359,14 +344,14 @@ export class DockerClient {
                         res();
                     });
                 } else {
-                    this.logErrorStatus(opts, resp);
+                    this.logErrorInfos(opts, resp);
                     rej();
                 }
             });
 
             req.on('error', (e) => {
-                this.logError(`[DOCKER CLIENT] (ERR) /exec/${idExec}/start`, e);
-                this.logErrorStatus(opts);
+                this.logError(`(ERR) /exec/${idExec}/start`, e);
+                this.logErrorInfos(opts);
                 rej(e);
             });
 
@@ -402,31 +387,26 @@ export class DockerClient {
      */
     private logDebug(log: string | Buffer, e?: any) {
 
-        if (!this._debug) return;
         if (!e) e = '';
 
-        if (typeof log === 'string') console.log(log, e);
+        if (typeof log === 'string') this.logger.debug(log, e);
         else process.stdout.write(log);
     }
 
     private logDebugResp(resp: IncomingMessage) {
-        if (!this._debug) return;
-        console.log(`[DOCKER CLIENT] - Réponse : [${resp.statusCode}]`, resp.headers);
+        this.logger.debug(`- Réponse : [${resp.statusCode}]`, resp.headers);
     }
-
 
     private logError(log: string | Buffer, e?: any) {
 
         if (!e) e = '';
 
-        if (typeof log === 'string') console.error(log, e);
+        if (typeof log === 'string') this.logger.error(log, e);
         else process.stderr.write(log);
     }
 
-    private logErrorStatus(httpOpts: any, resp?: IncomingMessage, data?: any) {
-        console.error('[DOCKER CLIENT] - Options de requete : ', httpOpts);
-        !!resp && console.error(`[DOCKER CLIENT] - Réponse : [${resp.statusCode}]`, resp.headers);
-        !!data && console.error('[DOCKER CLIENT] - Données : ', data);
+    private logErrorInfos(httpOpts: any, resp?: IncomingMessage, data?: any) {
+        !!resp && this.logger.error(` ${httpOpts.path} [${resp.statusCode}]`, data);
     }
 
 }

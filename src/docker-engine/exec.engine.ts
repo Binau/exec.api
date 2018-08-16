@@ -1,8 +1,8 @@
 import {DockerClient} from './docker.client';
-import {ImageBean} from './bean/image.bean';
+import {ImageInfosBean} from './bean/imageInfosBean';
 import {CoreEngine} from './core.engine';
 import {PromiseUtils} from '../tool/promise.utils';
-import {ExecParam, ExecLog} from "./api/exec.ws.api";
+import {ExecParam, ExecLog} from "./api/exec.api";
 
 
 export class ExecRequest {
@@ -16,15 +16,21 @@ export class ExecEngine {
 
     private idContainer: string;
     private dockerClient: DockerClient;
-    private _debug = false;
 
     private constructor(private coreEngine: CoreEngine) {
         this.dockerClient = this.coreEngine.dockerClient
     }
 
     public static async create(coreEngine: CoreEngine, param: ExecParam): Promise<ExecEngine> {
+
+
+
+
+
         let execEngine = new ExecEngine(coreEngine);
-        await execEngine.build(param);
+        let ok = await execEngine.build(param);
+        if (!ok) return null;
+
         return execEngine;
     }
 
@@ -34,20 +40,20 @@ export class ExecEngine {
      * @param {ExecParam} param
      * @returns {Promise<void>}
      */
-    private async build(param: ExecParam) {
+    private async build(param: ExecParam): Promise<boolean> {
 
         // Recuperation/ creation de l'image
-        let imgBean: ImageBean = await this.coreEngine.getOrBuildImg(param.idImage);
+        let imgBean: ImageInfosBean = await this.coreEngine.getOrBuildImg(param.idImage);
+        if (!imgBean) return false;
 
         // Creation + demarrage container
         this.idContainer = await this.coreEngine.startContainer(imgBean);
+        if (this.idContainer == null) return false;
 
         // Ecriture de chacun des fichiers
         this.coreEngine.writeFiles(this.idContainer, param.files);
-    }
 
-    public debug() {
-        this._debug = true;
+        return true;
     }
 
     public async run(req?: ExecRequest): Promise<void> {
@@ -57,6 +63,14 @@ export class ExecEngine {
 
         // Lancement de l'execution
         await this.startScript('./runWrapper.sh', req);
+    }
+
+    public async stop(): Promise<void> {
+
+        // Stop + suppression après timeout
+        await this.dockerClient.stopContainer(this.idContainer);
+        await this.dockerClient.deleteContainer(this.idContainer);
+        return;
     }
 
 
@@ -97,14 +111,6 @@ export class ExecEngine {
             }
             else throw e;
         }
-    }
-
-    public async stop(): Promise<void> {
-
-        // Stop + suppression après timeout
-        await this.dockerClient.stopContainer(this.idContainer);
-        await this.dockerClient.deleteContainer(this.idContainer);
-        return;
     }
 
     private mapExecLogsToExecLogs(logs: string, prefix: string): ExecLog[] {

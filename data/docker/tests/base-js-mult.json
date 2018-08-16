@@ -1,0 +1,42 @@
+{
+  "groupTitle": "Base du javascript",
+  "title": "Multiplication de 2 chiffres",
+  "descriptif": "Créer une fonction permettant de retourner la multiplication de ces 2 paramètres.",
+  "imgName": "simple-js",
+  "files": [
+    {
+      "file": "index.js",
+      "copyTo": "src/index.js",
+      "codes": [
+        {
+          "title": "index.js",
+          "tag": "#CODE1;",
+          "templateFile": "template.js"
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "param": {
+        "val1": 8,
+        "val2": 2
+      },
+      "result": 16
+    },
+    {
+      "param": {
+        "val1": 3,
+        "val2": 5
+      },
+      "result": 15
+    },
+    {
+      "param": {
+        "val1": 7,
+        "val2": 2
+      },
+      "result": 14
+    }
+  ]
+}

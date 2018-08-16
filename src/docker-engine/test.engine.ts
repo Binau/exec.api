@@ -6,7 +6,7 @@ import {BufferUtils} from "../tool/buffer.utils";
 import * as deepEqual from 'deep-equal';
 import {CoreEngine} from "./core.engine";
 import {TestInfo, TestParam, TestResult} from "./api/test.ws.api";
-import {ExecParam} from "./api/exec.ws.api";
+import {ExecParam} from "./api/exec.api";
 
 export class TestEngine {
 
