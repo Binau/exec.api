@@ -1,54 +1,62 @@
 import {GET, HttpContext} from "http-typescript";
-import * as Fs from "fs";
-import { FormationBean } from "../bean/formation.bean";
+
+import { Formation } from "../bean/formation/formation.bdd";
+import { IFormation } from "../bean/formation/formation";
+
+import { CycleFormation } from "../bean/cycle-formation/cycle.formation.bdd";
+import { ICycleFormation } from "../bean/cycle-formation/cycle.formation";
+
+import * as jwt from 'jsonwebtoken';
+
+
 
 export class FormationHttp {
 
 
-    @GET('/formations')
-    public async getListeFormations(context: HttpContext): Promise<FormationBean[]>{
-        let listeFormation =[];
-        let formationBean: FormationBean = {
-            nom: '',
-            dateCreation : new Date(),
-            dateMaj : new Date(),
-            version : 1,
-            auteurs : ['BINAU','GROBINAU'],
-            id : 'base-js-',
-            motCles : ['JAVASCRIPT','JS'],
-            etapesFormation : []
-        };
-        listeFormation.push(formationBean);
-        listeFormation.push(formationBean);
+    // TODO : Peut on appliquer cette méthode sur tous les appels définis dans FormationHttp ?
+    // De manière à éviter de devoir le faire manuellement sur toutes les méthodes ...
+    // en fonction de la manière de faire --> faire la gestion des erreurs !!
+    private verifierLesDroits(context: HttpContext){
+        if (!context.koaContext.header || !context.koaContext.header.authorization || !context.koaContext.header.authorization[1]){
+            // TODO : envoyer une erreur
+            console.log('Utilisateur non authentifié')
+        }else{
+            let token = context.koaContext.header.authorization;
+            console.log(`token = ${token}`)
 
-        return listeFormation;
+            // TODO : changer le 123 pour une valeur paramétrée
+            let payload = jwt.verify(token, '123')
+
+            if (!payload){
+                // TODO : envoyer une erreur
+                console.log('Token faux')
+            }else{
+                console.log(`utilisateur : ${payload.sub}`)
+            }
+        }
     }
 
+    @GET('/cycleFormations')
+    public async getListeCyclesDeFormation(context: HttpContext): Promise<ICycleFormation>{
+        this.verifierLesDroits(context);
+        return await CycleFormation.find({})
+    }
+
+    @GET('/cycleFormation/:cycleFormationId')
+    public async getCycleDeFormation(context: HttpContext): Promise<ICycleFormation>{
+
+        return await CycleFormation.findOne({ id: context.params.cycleFormationId })
+    }
+
+    @GET('/cycleFormation/formations/:cycleFormationId')
+    public async getListeFormationsByCycleDeFormation(context: HttpContext): Promise<IFormation[]>{
+        return await Formation.find({ idCycleFormation: context.params.cycleFormationId })
+    }
+
+
     @GET('/formation/:formationId')
-    public async getFormationById(context: HttpContext): Promise<FormationBean>{
-        let formationId = context.params.formationId;
-        
-        let formationBean: FormationBean = {
-            nom: '',
-            dateCreation : new Date(),
-            dateMaj : new Date(),
-            version : 1,
-            auteurs : ['BINAU','GROBINAU'],
-            id : 'base-js-',
-            motCles : ['JAVASCRIPT','JS'],
-            etapesFormation : [
-                {
-                    cour : 'contenu de mon cour',
-                    exercice : {
-                        id: '1',
-                        contenu:'contenu exercice'
-                    }
-                }
-            ]
-        };
-
-        return formationBean;
-
+    public async getFormationById(context: HttpContext): Promise<IFormation>{
+        return await Formation.findOne({ id: context.params.formationId })
     }
 
 }
