@@ -2,21 +2,18 @@ FROM java:8-jdk-alpine
 
 RUN apk add --no-cache sed
 
-WORKDIR /app
+# Creation du user pour les programmes docker
+RUN adduser -DH dockeruser
 
-ADD writeFile.sh .
-RUN chmod +x writeFile.sh
+# Ajout des scripts docker-engine et applicatif
+ADD docker-engine ./docker-engine
+WORKDIR /docker-engine
 
-ADD runWrapper.sh .
-RUN chmod +x runWrapper.sh
-ADD run.sh .
-RUN chmod +x run.sh
+# Gestion des droits
+RUN chown -R dockeruser:dockeruser /docker-engine
+RUN chown -R root:root /docker-engine/bin
 
-ADD buildWrapper.sh .
-RUN chmod +x buildWrapper.sh
-ADD build.sh .
-RUN chmod +x build.sh
-
-ADD src ./src
+RUN chmod -R 777 /docker-engine/app
+RUN chmod -R 700 /docker-engine/bin
 
 CMD ["sh"]

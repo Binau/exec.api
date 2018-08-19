@@ -1,0 +1,12 @@
+{
+  "version":"0.0.1",
+  "description" : "Execution du bash",
+  "langage" : "shell",
+  "srcDir" : "app/src",
+
+  "bootFileName":"start.sh",
+  "bootFileContentTemplate": "#!/bin/bash\n\necho 'Hello Bash'\n",
+
+  "newFileNameTemplate":"file#FILE_INDEX#.sh",
+  "newFileContentTemplate" : "#!/bin/bash\n\n# run with ./#FILE_NAME#\n\necho 'Hello #FILE_NAME#'\n"
+}

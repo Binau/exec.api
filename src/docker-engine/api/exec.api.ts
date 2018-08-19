@@ -1,14 +1,13 @@
-
-
 export class FileToInject {
     filePath: string;
     code: string;
 }
 
 export class ExecInfos {
-    description : string;
-    langage : string;
-    bootFileTemplate : FileToInject; // TODO Files ?
+    description: string;
+    langage: string;
+    bootFileTemplate: FileToInject;
+    newFileTemplate: FileToInject;
 }
 
 export class ExecParam {
@@ -17,7 +16,6 @@ export class ExecParam {
     // Codes à injecter
     files: FileToInject[];
 }
-
 
 
 export class ExecLog {

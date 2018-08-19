@@ -74,13 +74,13 @@ export class CoreEngine {
     public async loadImgConf(imgId): Promise<ImageConf> {
 
         // Pour eviter l'injection, test que l'id fait partie des images possibles
-        if(!this.availablesImgsId.includes(imgId)) {
+        if (!this.availablesImgsId.includes(imgId)) {
             this.logSrv.warn(`Configuration inexistante pour l'image : ${imgId}`);
             return null;
         }
 
         //
-        let imgConf = `${this.engineConf.dockerImgsRoot}/${imgId}/conf.json`;
+        let imgConf = `${this.engineConf.dockerImgsRoot}/${imgId}/image.conf.json`;
         this.logSrv.info(`Chargement de la configuration de l'image : ${imgConf}`);
 
         // Recuperation de la conf
@@ -151,8 +151,9 @@ export class CoreEngine {
             }
             return imgBean;
         } catch (e) {
-            this.logSrv.error(`L'image ${imgBean.fullName} n'a pas pu être récupérée/créée auprès de docker`, e);
-            return null;
+            let message = `L'image ${imgBean.fullName} n'a pas pu être récupérée/créée auprès de docker`;
+            this.logSrv.error(message, e);
+            throw message;
         }
 
     }
@@ -162,17 +163,24 @@ export class CoreEngine {
      */
 
     public async startContainer(imgBean: ImageInfosBean): Promise<string> {
-        this.logSrv.info(`Création et démarrate d'un contaier pour l'image ${imgBean.fullName}`);
+        this.logSrv.info(`Création et démarrage d'un container pour l'image ${imgBean.fullName}`);
         try {
             let idContainer = await this.dockerClient.createContainers(imgBean.fullName);
             await this.dockerClient.startContainer(idContainer);
             return idContainer;
-        } catch(e) {
-            this.logSrv.error(`Erreur lors de la tentative de démarrage/création du container pour l'image ${imgBean.fullName}`);
-            return null;
+        } catch (e) {
+            let message = `Erreur lors de la tentative de démarrage/création du container pour l'image ${imgBean.fullName}`;
+            this.logSrv.error(message, e);
+            throw e;
         }
     }
 
+    public async stopContainer(idContainer:string): Promise<void> {
+        // Stop + suppression après timeout
+        await this.dockerClient.stopContainer(idContainer);
+        await this.dockerClient.deleteContainer(idContainer);
+        return;
+    }
 
     /**
      * Creer une execution permettant d'ecrire un fichier dans le container docker
@@ -180,10 +188,14 @@ export class CoreEngine {
      * @param {FileToInject} file
      * @returns {Promise<void>}
      */
-    public async writeFile(idContainer: string, file: FileToInject): Promise<void> {
+    public async writeFile(idContainer: string, file: FileToInject, root?:string): Promise<void> {
+
+        let path = file.filePath;
+        if(!!root) path = `${root}/${path}`;
+
         let idExec = await this.dockerClient.createExec(
             idContainer,
-            ['./writeFile.sh', file.code, file.filePath]);
+            ['bin/writeFile.sh', file.code, path]);
         await this.dockerClient.startExec(idExec);
     }
 
@@ -193,9 +205,9 @@ export class CoreEngine {
      * @param {FileToInject} file
      * @returns {Promise<void>}
      */
-    public async writeFiles(idContainer: string, files: FileToInject[]): Promise<void> {
+    public async writeFiles(idContainer: string, files: FileToInject[], root:string): Promise<void> {
         for (let file of files) {
-            this.writeFile(idContainer, file);
+            await this.writeFile(idContainer, file, root);
         }
     }
 

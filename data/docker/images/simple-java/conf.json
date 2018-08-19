@@ -1,7 +1,0 @@
-{
-  "version":"0.0.1",
-  "description" : "Execution du java sur un openjdk 1.8.0.111-internal",
-  "langage" : "java",
-  "bootFileName":"src/Main.java",
-  "bootFileTemplate": "public class Main { \n  public static void main (String[] args){ \n    System.out.println(\"Hello Java\"); \n  } \n}"
-}

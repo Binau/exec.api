@@ -57,7 +57,7 @@ export class TestEngine {
             });
         }
 
-        let execEngine = await ExecEngine.create(coreEngine, buildParam);
+        let execEngine = await ExecEngine.create(coreEngine, buildParam, console);
 
         return new TestEngine(execEngine, confTest);
     }

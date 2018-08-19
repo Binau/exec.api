@@ -41,8 +41,12 @@ export class ExecHttp {
             langage: conf.langage,
             description: conf.description,
             bootFileTemplate: {
-                code: conf.bootFileTemplate,
+                code: conf.bootFileContentTemplate,
                 filePath: conf.bootFileName
+            },
+            newFileTemplate: {
+                filePath: conf.newFileNameTemplate,
+                code: conf.newFileContentTemplate
             }
         };
 

@@ -58,7 +58,7 @@ export class DockerClient {
 
             const req = Https.request(opts, (resp) => {
 
-                resp.on('data', d => this.logger.debug( BufferUtils.bufferOrStrToStr(d)));
+                resp.on('data', d => this.logger.debug(BufferUtils.bufferOrStrToStr(d)));
                 resp.on('end', (d) => {
                     this.logger.info(`Image ${imgName} créée...`);
                     this.logDebug(`(POST) /build?t=${imgName} FIN`);
@@ -116,9 +116,6 @@ export class DockerClient {
                 this.logErrorInfos(opts);
                 rej(e);
             });
-            /*req.once('socket', s => s.setTimeout(DockerClient.REQ_TIMEOUT, () => {
-                s.destroy();
-            }));*/
             req.end();
 
 
@@ -309,6 +306,7 @@ export class DockerClient {
                 AttachStdin: true,
                 AttachStdout: true,
                 AttachStderr: true,
+                /*User: user,*/
                 Cmd: cmd,
             }));
             req.end();

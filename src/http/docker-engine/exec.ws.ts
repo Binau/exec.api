@@ -8,7 +8,6 @@ import {Level, Logger} from "../../common/log.service";
 
 export class ExecWs extends WsServer {
 
-    private coreEngineLoaded: boolean;
     private coreEngine: CoreEngine;
     private logger: Console;
 
@@ -24,19 +23,19 @@ export class ExecWs extends WsServer {
 
     protected async onMessage(execPrm: ExecParam): Promise<void> {
 
-        // Todo max files execPrm ?
-        // Todo fichier de boot présent dans execPrm ?
-
         this.logger.info(`${this.logHeader()} Initialisation de l'engine et execution`);
-        let execEngine = await ExecEngine.create(this.coreEngine, execPrm);
+        this.logger.debug(`${this.logHeader()} Execution avec les Parametres : `, execPrm);
 
-        if (!execEngine) {
+        let execEngine: ExecEngine;
+        try {
+            execEngine = await ExecEngine.create(this.coreEngine, execPrm,
+                AppContext.instance.logService.getLogger('ExecEngine', Level.DEBUG));
+        } catch (e) {
             this.logger.error(`${this.logHeader()} Erreur lors de l'initialisation de l'engine`);
+            this.sendError(e);
             this.close();
             return;
         }
-
-        this.logger.debug(`${this.logHeader()} Execution avec les Parametres : `, execPrm);
 
         try {
             let nbLogs = 0;
@@ -54,5 +53,13 @@ export class ExecWs extends WsServer {
             this.close();
             execEngine.stop();
         }
+    }
+
+    private sendError(message: string, name: string = 'Error') {
+        this.send({
+            wsError: true,
+            name: name,
+            message: message
+        })
     }
 }

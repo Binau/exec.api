@@ -15,10 +15,7 @@ export class TestWs extends WsServer {
 
     protected async onMessage(data: TestParam): Promise<void> {
 
-
-
         let testEngine = await TestEngine.create(this.coreEngine, data);
-
         console.log('params : ', data);
 
         try {

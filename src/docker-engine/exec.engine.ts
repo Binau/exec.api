@@ -3,6 +3,8 @@ import {ImageInfosBean} from './bean/imageInfosBean';
 import {CoreEngine} from './core.engine';
 import {PromiseUtils} from '../tool/promise.utils';
 import {ExecParam, ExecLog} from "./api/exec.api";
+import {AppContext} from "../common/app.context";
+import {Level} from "../common/log.service";
 
 
 export class ExecRequest {
@@ -11,26 +13,26 @@ export class ExecRequest {
     logCallBack?: (log: ExecLog) => void
 }
 
-
 export class ExecEngine {
 
-    private idContainer: string;
-    private dockerClient: DockerClient;
+    public static MAX_EXEC_FILES: number = 30;
+    public logger: Console = console;
 
-    private constructor(private coreEngine: CoreEngine) {
-        this.dockerClient = this.coreEngine.dockerClient
+    private idContainer: string;
+
+    private get dockerClient(): DockerClient {
+        return this.coreEngine.dockerClient;
     }
 
-    public static async create(coreEngine: CoreEngine, param: ExecParam): Promise<ExecEngine> {
+    private constructor(
+        private coreEngine: CoreEngine
+    ) {
+    }
 
-
-
-
-
+    public static async create(coreEngine: CoreEngine, param: ExecParam, logger: Console): Promise<ExecEngine> {
         let execEngine = new ExecEngine(coreEngine);
-        let ok = await execEngine.build(param);
-        if (!ok) return null;
-
+        execEngine.logger = logger;
+        await execEngine.build(param);
         return execEngine;
     }
 
@@ -40,39 +42,47 @@ export class ExecEngine {
      * @param {ExecParam} param
      * @returns {Promise<void>}
      */
-    private async build(param: ExecParam): Promise<boolean> {
+    private async build(param: ExecParam): Promise<void> {
 
         // Recuperation/ creation de l'image
         let imgBean: ImageInfosBean = await this.coreEngine.getOrBuildImg(param.idImage);
-        if (!imgBean) return false;
+
+        // Vérifications
+        // Fichier de boot
+        if (!param || !param.files || param.files.length === 0 ||
+            !param.files.some(f => f.filePath === imgBean.conf.bootFileName)
+        ) {
+            let errorMessage = `Le fichier de boot ${imgBean.conf.bootFileName} est obligatoire.`;
+            this.logger.error(errorMessage);
+            throw errorMessage;
+        }
+        // Max fichers
+        if (param.files.length > ExecEngine.MAX_EXEC_FILES) {
+            let errorMessage = `Vous ne pouvez pas utiliser plus de ${ExecEngine.MAX_EXEC_FILES} fichiers.`;
+            this.logger.error(errorMessage);
+            throw errorMessage;
+        }
 
         // Creation + demarrage container
         this.idContainer = await this.coreEngine.startContainer(imgBean);
-        if (this.idContainer == null) return false;
 
         // Ecriture de chacun des fichiers
-        this.coreEngine.writeFiles(this.idContainer, param.files);
+        await this.coreEngine.writeFiles(this.idContainer, param.files, imgBean.conf.srcDir);
 
-        return true;
     }
 
     public async run(req?: ExecRequest): Promise<void> {
 
         // Lancement du build
-        await this.startScript('./buildWrapper.sh', req);
+        await this.startScript('bin/buildWrapper.sh', req);
 
         // Lancement de l'execution
-        await this.startScript('./runWrapper.sh', req);
+        await this.startScript('bin/runWrapper.sh', req);
     }
 
     public async stop(): Promise<void> {
-
-        // Stop + suppression après timeout
         await this.dockerClient.stopContainer(this.idContainer);
-        await this.dockerClient.deleteContainer(this.idContainer);
-        return;
     }
-
 
     private async startScript(script: string, req?: ExecRequest): Promise<void> {
 
@@ -81,7 +91,10 @@ export class ExecEngine {
         req.timeout = req.timeout || 3000;
 
         // Lancement de l'execution
-        let idExec = await this.dockerClient.createExec(this.idContainer, [script, JSON.stringify(req.params)]);
+        let idExec = await this.dockerClient.createExec(
+            this.idContainer,
+            [script, JSON.stringify(req.params)]
+        );
 
         try {
 

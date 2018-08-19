@@ -1,0 +1,14 @@
+{
+  "version":"0.2.1",
+  "description" : "Execution du javascript sur un node v10.4 : https://nodejs.org/docs/latest-v10.x/api/index.html",
+  "langage" : "javascript",
+  "srcDir" : "app/src",
+
+  "bootFileName":"index.js",
+  "bootFileContentTemplate": "\nconsole.log('Hello Js');\n",
+
+  "newFileNameTemplate":"file#FILE_INDEX#.js",
+  "newFileContentTemplate" : "\n// Import with require('./#FILE_NAME#'); \n\nconsole.log('Hello #FILE_NAME#')\n"
+
+
+}
