@@ -81,7 +81,7 @@ export class ExecEngine {
     }
 
     public async stop(): Promise<void> {
-        await this.dockerClient.stopContainer(this.idContainer);
+        await this.coreEngine.stopContainer(this.idContainer);
     }
 
     private async startScript(script: string, req?: ExecRequest): Promise<void> {

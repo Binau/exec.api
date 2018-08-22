@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ ! -f "$2" ]; then
-    mkdir -p "$2"
+    su -c 'mkdir -p $0' dockeruser -- "$2"
     rm -r "$2"
 fi
 

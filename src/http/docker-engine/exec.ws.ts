@@ -1,9 +1,9 @@
-import {HttpContext, WsServer} from 'http-typescript';
+import {WsServer} from 'http-typescript';
 import {CoreEngine} from '../../docker-engine/core.engine';
 import {ExecEngine} from "../../docker-engine/exec.engine";
 import {ExecParam} from "../../docker-engine/api/exec.api";
 import {AppContext} from "../../common/app.context";
-import {Level, Logger} from "../../common/log.service";
+import {Level} from "../../common/log.service";
 
 
 export class ExecWs extends WsServer {
@@ -42,7 +42,12 @@ export class ExecWs extends WsServer {
             await execEngine.run({
                 logCallBack: (l) => {
                     this.logger.debug(`${this.logHeader()} Log d'execution : `, l);
-                    this.send(l);
+                    try{
+                        this.send(l);
+                    } catch(e) {
+                        this.logger.error(e);
+                        execEngine.stop();
+                    }
                     nbLogs++;
                 }
             });

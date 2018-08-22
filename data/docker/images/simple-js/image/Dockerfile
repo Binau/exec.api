@@ -1,5 +1,7 @@
 FROM node:10.4-alpine
 
+RUN apk add --no-cache sed
+
 # Creation du user pour les programmes docker
 RUN adduser -DH dockeruser
 
